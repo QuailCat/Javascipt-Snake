@@ -15,15 +15,64 @@
                 RIGHT : "RIGHT"
             };
 
+            const Triangle = {
+                fill : function(centerX, centerY, size, direction) {
+                    var canvas = document.getElementById("SnakeCanvas");
+                    var context = canvas.getContext("2d");
+
+                    this.prepare(centerX, centerY, size, direction, context);
+
+                    context.fill();
+                },
+                prepare : function(centerX, centerY, size, direction, context) {
+                    var halfSize = size/2;
+
+                    switch (direction) {
+                        case Direction.UP:
+                        context.beginPath();
+                            context.moveTo(centerX, centerY - halfSize);
+                            context.lineTo(centerX + halfSize, centerY + halfSize);
+                            context.lineTo(centerX - halfSize, centerY + halfSize);
+                            context.lineTo(centerX, centerY - halfSize);
+                            break;
+                        case Direction.DOWN:
+                            context.beginPath();
+                            context.moveTo(centerX, centerY + halfSize);
+                            context.lineTo(centerX + halfSize, centerY - halfSize);
+                            context.lineTo(centerX - halfSize, centerY - halfSize);
+                            context.lineTo(centerX, centerY + halfSize);
+                            break;
+                        case Direction.LEFT:
+                            context.moveTo(centerX - halfSize, centerY);
+                            context.lineTo(centerX + halfSize, centerY - halfSize);
+                            context.lineTo(centerX + halfSize, centerY + halfSize);
+                            context.lineTo(centerX - halfSize, centerY);
+                            break;
+                        case Direction.RIGHT:
+                            context.moveTo(centerX + halfSize, centerY);
+                            context.lineTo(centerX - halfSize, centerY + halfSize);
+                            context.lineTo(centerX - halfSize, centerY - halfSize);
+                            context.lineTo(centerX + halfSize, centerY);
+                            break;
+                        default:
+                            break;
+                    }
+                },
+                stroke : function(centerX, centerY, size, direction) {
+                    var canvas = document.getElementById("SnakeCanvas");
+                    var context = canvas.getContext("2d");
+                    
+                    this.prepare(centerX, centerY, size, direction, context);
+
+                    context.stroke();
+                }
+            }
+
             var snake = {
                 center : { x : 100, y : 200 },
                 size : 10,
                 draw : function() {
-                    var canvas = document.getElementById("SnakeCanvas");
-                    var context = canvas.getContext("2d");
-                    context.beginPath();
-                    context.arc( this.center.x, this.center.y, this.size, 0, 2 * Math.PI);
-                    context.stroke(); 
+                    Triangle.fill(this.center.x, this.center.y, this.size, Direction.DOWN);
                     return;
                 }
             };
