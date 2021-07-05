@@ -7,5 +7,139 @@
     </head>
     <body>
         <canvas id="SnakeCanvas" width="400" height="400" style="border:1px solid #000000"></canvas>
+        <script>
+            const Direction = {
+                UP    : "UP",
+                DOWN  : "DOWN",
+                LEFT  : "LEFT",
+                RIGHT : "RIGHT"
+            };
+
+            const Triangle = {
+                fill : function(centerX, centerY, size, direction) {
+                    var canvas = document.getElementById("SnakeCanvas");
+                    var context = canvas.getContext("2d");
+                    context.beginPath();
+
+                    this.prepare(centerX, centerY, size, direction, context);
+
+                    context.fill();
+                    context.closePath();
+                },
+                prepare : function(centerX, centerY, size, direction, context) {
+                    var halfSize = size/2;
+
+                    switch (direction) {
+                        case Direction.UP:
+                            context.moveTo(centerX, centerY - halfSize);
+                            context.lineTo(centerX + halfSize, centerY + halfSize);
+                            context.lineTo(centerX - halfSize, centerY + halfSize);
+                            context.lineTo(centerX, centerY - halfSize);
+                            break;
+                        case Direction.DOWN:
+                            context.moveTo(centerX, centerY + halfSize);
+                            context.lineTo(centerX + halfSize, centerY - halfSize);
+                            context.lineTo(centerX - halfSize, centerY - halfSize);
+                            context.lineTo(centerX, centerY + halfSize);
+                            break;
+                        case Direction.LEFT:
+                            context.moveTo(centerX - halfSize, centerY);
+                            context.lineTo(centerX + halfSize, centerY - halfSize);
+                            context.lineTo(centerX + halfSize, centerY + halfSize);
+                            context.lineTo(centerX - halfSize, centerY);
+                            break;
+                        case Direction.RIGHT:
+                            context.moveTo(centerX + halfSize, centerY);
+                            context.lineTo(centerX - halfSize, centerY + halfSize);
+                            context.lineTo(centerX - halfSize, centerY - halfSize);
+                            context.lineTo(centerX + halfSize, centerY);
+                            break;
+                        default:
+                            break;
+                    }
+                },
+                stroke : function(centerX, centerY, size, direction) {
+                    var canvas = document.getElementById("SnakeCanvas");
+                    var context = canvas.getContext("2d");
+                    context.beginPath();
+                    
+                    this.prepare(centerX, centerY, size, direction, context);
+
+                    context.stroke();
+                    context.closePath();
+                }
+            }
+
+            var snake = {
+                center : { x : 100, y : 200 },
+                dx : 0,
+                dy : 0,
+                size : 10,
+                direction : Direction.DOWN,
+                speed : 2,
+                draw : function() {
+                    Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
+                    return;
+                },
+                setDirection : function(direction) {
+                    switch (direction) {
+                        case Direction.UP:
+                            this.dy = -this.speed;
+                            this.dx = 0;
+                            break;
+                        case Direction.DOWN:
+                            this.dy = this.speed;
+                            this.dx = 0;
+                            break;
+                        case Direction.LEFT:
+                            this.dy = 0;
+                            this.dx = -this.speed;
+                            break;
+                        case Direction.RIGHT:
+                            this.dy = 0;
+                            this.dx = this.speed;
+                            break;
+                        default:
+                            break;
+                    }
+                    this.direction = direction
+
+                }
+            };
+        
+            document.addEventListener('keydown', function(e) {
+                var code = e.which || e.keyCode;
+                if (code == '38') {
+                    // Up
+                    snake.setDirection(Direction.UP);
+                }
+                else if (code == '40') {
+                    // Down
+                    snake.setDirection(Direction.DOWN);
+                }
+                else if (code == '37') {
+                    // Left
+                    snake.setDirection(Direction.LEFT);
+                }
+                else if (code == '39') {
+                    // Right
+                    snake.setDirection(Direction.RIGHT);
+                }
+            });
+
+            function draw() {
+                var canvas = document.getElementById("SnakeCanvas");
+                var context = canvas.getContext("2d");
+
+                context.clearRect(0, 0, canvas.width, canvas.height);
+
+                
+                snake.draw();
+                snake.center.x += snake.dx;
+                snake.center.y += snake.dy;
+            }
+
+            setInterval(draw, 20);
+        </script>
     </body>
 </html>
