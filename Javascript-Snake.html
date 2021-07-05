@@ -71,8 +71,9 @@
             var snake = {
                 center : { x : 100, y : 200 },
                 size : 10,
+                direction : Direction.DOWN,
                 draw : function() {
-                    Triangle.fill(this.center.x, this.center.y, this.size, Direction.DOWN);
+                    Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
                     return;
                 }
             };
