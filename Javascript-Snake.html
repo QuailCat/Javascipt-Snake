@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            Javascript-Snake
+        </title>
+    </head>
+    <body>
+        <canvas id="SnakeCanvas" width="400" height="400" style="border:1px solid #000000"></canvas>
+        <script>
+
+            var snake = {
+                center : { x : 100, y : 200 },
+                size : 10,
+                draw : function() {
+                    var canvas = document.getElementById("SnakeCanvas");
+                    var context = canvas.getContext("2d");
+                    context.beginPath();
+                    context.arc( this.center.x, this.center.y, this.size, 0, 2 * Math.PI);
+                    context.stroke(); 
+                    return;
+                }
+            }
+            
+            snake.draw();
+        </script>
+    </body>
+</html>
