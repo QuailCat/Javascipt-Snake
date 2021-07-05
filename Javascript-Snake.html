@@ -8,6 +8,12 @@
     <body>
         <canvas id="SnakeCanvas" width="400" height="400" style="border:1px solid #000000"></canvas>
         <script>
+            const Direction = {
+                UP    : "UP",
+                DOWN  : "DOWN",
+                LEFT  : "LEFT",
+                RIGHT : "RIGHT"
+            };
 
             var snake = {
                 center : { x : 100, y : 200 },
@@ -20,7 +26,7 @@
                     context.stroke(); 
                     return;
                 }
-            }
+            };
             
             snake.draw();
         </script>
