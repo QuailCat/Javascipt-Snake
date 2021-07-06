@@ -70,9 +70,9 @@
                 }
             }
 
-            function food(centerX, centerY) {
+            function Food(centerX, centerY) {
                 this.center = { x : centerX, y : centerY },
-                this.radius = 6,
+                this.radius = 8,
                 this.draw = function() {
                     var canvas = document.getElementById("SnakeCanvas");
                     var context = canvas.getContext("2d");
@@ -91,10 +91,82 @@
                 }
             }
 
-            var grub = new food(200, 200);
+            var grub = new Food(210, 210);
+
+            const grid = {
+                squareSize : 20,
+                draw : function(context, width, height) {
+                    let saveFillStyle = context.fillStyle;
+
+                    context.beginPath();
+
+                    // Draw background color
+                    context.fillStyle = "#996633";
+                    context.rect(0, 0, width, height);
+                    context.fill();
+
+                    context.closePath();
+
+                    // Draw Grid
+                    
+                    context.fillStyle = "#999966";
+                    for (let col = 0; col < width/this.squareSize; col++) {
+                        for (let row = 0; row < height/this.squareSize; row++) {
+                            if((col + row) % 2 == 0) {
+                                context.beginPath();
+                                context.rect(col * this.squareSize, 
+                                    row * this.squareSize, 
+                                    this.squareSize, 
+                                    this.squareSize);
+                                context.fill();
+                                context.closePath();
+                            } 
+                        }
+                    }
+
+                    
+                    context.closePath();
+                    context.fillStyle = saveFillStyle;
+                    return;
+                }
+            }
+
+            function SnakeSegment(centerX, CenterY) {
+                this.center = { x : centerX, y : centerY },
+                this.radius = 8; 
+                this.next = null;
+                this.draw = function() {
+                    var canvas = document.getElementById("SnakeCanvas");
+                    var context = canvas.getContext("2d");
+                    context.beginPath();
+
+                    context.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
+                    let saveFillStyle = context.fillStyle;
+                    context.fillStyle = "green";
+                    context.strokeStyle = "black";
+                    context.fill();
+                    context.stroke();
+
+                    context.fillStyle = saveFillStyle;
+
+                    context.closePath();
+
+                    if (this.next != null) {
+                        this.next.draw();
+                    }
+                }
+                this.move = function(prevX, prevY) {
+
+
+                    if (this.next != null) {
+                        this.next.move();
+                    }
+                }
+
+            }
 
             var snake = {
-                center : { x : 100, y : 200 },
+                center : { x : 110, y : 210 },
                 dx : 0,
                 dy : 0,
                 size : 16,
@@ -161,26 +233,36 @@
                 setDirection : function(direction) {
                     switch (direction) {
                         case Direction.UP:
+                            if (this.direction == Direction.DOWN)
+                                break;
                             this.dy = -this.speed;
                             this.dx = 0;
+                            this.direction = direction
                             break;
                         case Direction.DOWN:
+                            if (this.direction == Direction.UP)
+                                break;
                             this.dy = this.speed;
                             this.dx = 0;
+                            this.direction = direction
                             break;
                         case Direction.LEFT:
+                            if (this.direction == Direction.RIGHT)
+                                break;
                             this.dy = 0;
                             this.dx = -this.speed;
+                            this.direction = direction
                             break;
                         case Direction.RIGHT:
+                            if (this.direction == Direction.LEFT)
+                                break;
                             this.dy = 0;
                             this.dx = this.speed;
+                            this.direction = direction
                             break;
                         default:
                             break;
                     }
-                    this.direction = direction
-
                 }
             };
         
@@ -211,6 +293,7 @@
                 context.clearRect(0, 0, canvas.width, canvas.height);
 
                 
+                grid.draw(context, canvas.width, canvas.height);
 
                 snake.move();
 
