@@ -70,16 +70,93 @@
                 }
             }
 
+            function food(centerX, centerY) {
+                this.center = { x : centerX, y : centerY },
+                this.radius = 6,
+                this.draw = function() {
+                    var canvas = document.getElementById("SnakeCanvas");
+                    var context = canvas.getContext("2d");
+                    context.beginPath();
+
+                    context.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
+                    let saveFillStyle = context.fillStyle;
+                    context.fillStyle = "yellow";
+                    context.strokeStyle = "black";
+                    context.fill();
+                    context.stroke();
+
+                    context.fillStyle = saveFillStyle;
+
+                    context.closePath();
+                }
+            }
+
+            var grub = new food(200, 200);
+
             var snake = {
                 center : { x : 100, y : 200 },
                 dx : 0,
                 dy : 0,
-                size : 10,
+                size : 16,
                 direction : Direction.DOWN,
-                speed : 2,
+                speed : 4,
+                checkCollision : function() {
+                    var canvas = document.getElementById("SnakeCanvas");
+                    var halfSize = this.size/2;
+                    var topLeft = { 
+                        x : this.center.x - halfSize,
+                        y : this.center.y - halfSize
+                    };
+                    var bottomRight = {
+                        x : this.center.x + halfSize,
+                        y : this.center.y + halfSize
+                    }
+
+                    // treat snake head and grubs as circles for simplicity
+                    let snakeRadius = snake.size/2;
+
+                    // there is a collision if the distance is less than the sum of the radii
+                    let distance = Math.sqrt( 
+                        Math.pow(this.center.x - grub.center.x, 2)
+                        + Math.pow(this.center.y - grub.center.y, 2)
+                    );
+
+                    var context = canvas.getContext("2d");
+                    if(distance < (snakeRadius + grub.radius)) {
+                        context.font = "15px Arial";
+                        context.fillText("Collision", 100, 40);
+                    }
+
+
+                    // check if snake head is still on canvas
+                    if(topLeft.x < 0) {
+                        this.dx = 0;
+                        this.dy = 0;
+                        this.center.x = 0 + halfSize;
+                    } 
+                    else if (topLeft.y < 0) {
+                        this.dx = 0;
+                        this.dy = 0;
+                        this.center.y = 0 + halfSize;
+                    } 
+                    else if (bottomRight.x > canvas.width) {
+                        this.dx = 0;
+                        this.dy = 0;
+                        this.center.x = canvas.width - halfSize;
+                    }
+                    else if (bottomRight.y > canvas.width) {
+                        this.dx = 0;
+                        this.dy = 0;
+                        this.center.y = canvas.width - halfSize;
+                    }
+                },
                 draw : function() {
                     Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
                     return;
+                },
+                move : function () {
+                    this.center.x += this.dx;
+                    this.center.y += this.dy;   
                 },
                 setDirection : function(direction) {
                     switch (direction) {
@@ -134,9 +211,14 @@
                 context.clearRect(0, 0, canvas.width, canvas.height);
 
                 
+
+                snake.move();
+
                 snake.draw();
-                snake.center.x += snake.dx;
-                snake.center.y += snake.dy;
+                grub.draw();
+
+                snake.checkCollision();
+                
             }
 
             setInterval(draw, 20);
