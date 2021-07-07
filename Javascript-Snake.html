@@ -95,6 +95,18 @@
 
             const grid = {
                 squareSize : 20,
+                getSquare : function (x, y) {
+                    col = Math.floor(x/this.squareSize);
+                    row = Math.floor(y/this.squareSize);
+                    return { 
+                        "row" : row, 
+                        "col" : col, 
+                        "center" : { 
+                            "x" : col * this.squareSize + this.squareSize/2, 
+                            "y" : row * this.squareSize + this.squareSize/2
+                        } 
+                    };
+                },
                 draw : function(context, width, height) {
                     let saveFillStyle = context.fillStyle;
 
@@ -171,6 +183,7 @@
                 dy : 0,
                 size : 16,
                 direction : Direction.DOWN,
+                nextDirection : null,
                 speed : 4,
                 checkCollision : function() {
                     var canvas = document.getElementById("SnakeCanvas");
@@ -227,8 +240,60 @@
                     return;
                 },
                 move : function () {
-                    this.center.x += this.dx;
-                    this.center.y += this.dy;   
+                    if (this.nextDirection == null || this.direction == this.nextDirection) {
+                        // No change so continue in same direction
+                        this.center.x += this.dx;
+                        this.center.y += this.dy;  
+                    }
+                    else {
+                        let currentSquare = grid.getSquare(this.center.x, this.center.y);
+                        let nextX = this.center.x += this.dx;
+                        let nextY = this.center.y += this.dy;
+
+                        // Check if the snake head passes through the center of the current square
+                        if (this.dx != 0 ) {
+                            if ((this.dx < 0 && nextX < currentSquare["center"]["x"] <= this.center.x) ||
+                                (this.dx > 0 && this.center.x < currentSquare["center"]["x"] <= nextX)) {
+                                
+                                //let remainingMovement = Math.abs(this.dx) - Math.abs(this.center.x - currentSquare["center"]["x"]);
+
+                                // Set snake head to center of current square
+                                this.center.x = currentSquare["center"]["x"];
+                                this.center.y = currentSquare["center"]["y"];
+
+                                // Turn snake head
+                                this.setDirection(this.nextDirection);
+                                this.nextDirection = null;
+
+                                // TODO: Complete move
+                            }
+                            else {
+                                this.center.x = nextX;
+                                this.center.y = nextY;
+                            }
+                        }
+                        else if ( this.dy != 0 ) {
+                            if ((this.dy < 0 && nextY < currentSquare["center"]["y"] <= this.center.y) ||
+                                (this.dy > 0 && this.center.y < currentSquare["center"]["y"] <= nextY)) {
+                                
+                                //let remainingMovement = Math.abs(this.dy) - Math.abs(this.center.y - currentSquare["center"]["y"]);
+
+                                // Set snake head to center of current square
+                                this.center.x = currentSquare["center"]["x"];
+                                this.center.y = currentSquare["center"]["y"];
+
+                                // Turn snake head
+                                this.setDirection(this.nextDirection);
+                                this.nextDirection = null;
+
+                                // TODO: Complete move
+                            }
+                            else {
+                                this.center.x = nextX;
+                                this.center.y = nextY;
+                            }
+                        }
+                    }
                 },
                 setDirection : function(direction) {
                     switch (direction) {
@@ -263,26 +328,64 @@
                         default:
                             break;
                     }
+                },
+                setNextDirection : function(direction) {
+                    if(this.direction == direction)
+                        return;
+
+                    switch (direction) {
+                        case Direction.UP:
+                            if (this.direction == Direction.DOWN) {
+                                this.nextDirection = null;
+                                break;
+                            }
+                            this.nextDirection = direction;
+                            break;
+                        case Direction.DOWN:
+                            if (this.direction == Direction.UP) {
+                                this.nextDirection = null;
+                                break;
+                            }
+                            this.nextDirection = direction;
+                            break;
+                        case Direction.LEFT:
+                            if (this.direction == Direction.RIGHT) {
+                                this.nextDirection - null;
+                                break;
+                            }
+                            this.nextDirection = direction;
+                            break;
+                        case Direction.RIGHT:
+                            if (this.direction == Direction.LEFT) {
+                                this.nextDirection = null;
+                                break;
+                            }      
+                            this.nextDirection = direction;
+                            break;
+                        default:
+                            break;
+                    }
                 }
             };
         
             document.addEventListener('keydown', function(e) {
                 var code = e.which || e.keyCode;
+                snake.setDirection(snake.direction);
                 if (code == '38') {
                     // Up
-                    snake.setDirection(Direction.UP);
+                    snake.setNextDirection(Direction.UP);
                 }
                 else if (code == '40') {
                     // Down
-                    snake.setDirection(Direction.DOWN);
+                    snake.setNextDirection(Direction.DOWN);
                 }
                 else if (code == '37') {
                     // Left
-                    snake.setDirection(Direction.LEFT);
+                    snake.setNextDirection(Direction.LEFT);
                 }
                 else if (code == '39') {
                     // Right
-                    snake.setDirection(Direction.RIGHT);
+                    snake.setNextDirection(Direction.RIGHT);
                 }
             });
 
