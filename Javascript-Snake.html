@@ -223,6 +223,24 @@
                         context.fillText("Collision", 100, 40);
                     }
 
+                    // check if snake collides with itself
+                    if(this.nextSegment != null && this.nextSegment.nextSegment != null) {
+                        // skip first segment as the snake head cannot collide with it
+                        let segment = this.nextSegment.nextSegment;
+                        while (segment.nextSegment != null) {
+                            segment = segment.nextSegment;
+                            let segmentRect = segment.rect;
+                            if(segmentRect != null && snakeHeadRect.checkCollision(segmentRect)) {
+                                // collision!
+                                this.dx = 0;
+                                this.dy = 0;
+                                snake.enabled = false;
+                            }
+
+                        }
+                    }
+                        
+
 
                     // check if snake head is still on canvas
                     if(topLeft.x < 0) {
