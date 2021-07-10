@@ -269,12 +269,12 @@
                     }
                 },
                 draw : function() {
-                    Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
+                    
                     if(this.nextSegment != null) {
                         this.nextSegment.update(this.length);
                         this.nextSegment.draw();
                     }
-
+                    Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
                     return;
                 },
                 move : function () {
