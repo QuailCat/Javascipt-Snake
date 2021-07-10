@@ -151,6 +151,31 @@
             }
 
             
+            function Rectangle(x, y, width, height) {
+                this.x = x,
+                this.y = y,
+                this.width = width,
+                this.height = height,
+                this.checkCollision = function(rectangle) {
+                    // Check if the argument is a Rectangle
+                    if( !(rectangle instanceof Rectangle)) {
+                        throw "Invalid Argument";
+                    }
+
+                    // Check for collision using axis-aligned bounding box detection
+                    if(this.x < rectangle.x + rectangle.width &&
+                        this.x + this.width > rectangle.x &&
+                        this.y < rectangle.y + rectangle.height &&
+                        this.y + this.height > rect2.y) {
+                        // Collision detected
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+
+                }
+            }
 
             var snake = {
                 enabled : false,
