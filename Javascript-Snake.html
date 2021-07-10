@@ -180,7 +180,7 @@
                         return true;
                     }
                     else {
-                        // co collision
+                        // no collision
                         return false;
                     }
 
@@ -251,7 +251,11 @@
                 },
                 draw : function() {
                     Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
-                    this.nextSegment.draw(this.length);
+                    if(this.nextSegment != null) {
+                        this.nextSegment.update(this.length);
+                        this.nextSegment.draw();
+                    }
+
                     return;
                 },
                 move : function () {
@@ -409,11 +413,34 @@
                 this.direction = direction;
                 this.nextSegment = nextSegment;
                 this.size = SNAKE_SIZE;
-                this.draw = function(length) {
+                this.rect = null;
+                this.draw = function() {
                     var canvas = document.getElementById("SnakeCanvas");
                     var context = canvas.getContext("2d");
                     context.beginPath();
 
+                    context.rect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+                    
+                    let saveFillStyle = context.fillStyle;
+                    context.fillStyle = "blue";
+                    context.strokeStyle = "black";
+                    context.fill();
+                    context.stroke();
+
+                    context.fillStyle = saveFillStyle;
+
+                    context.closePath();
+
+                    if (this.nextSegment != null) {
+                        this.nextSegment.draw();                   
+                    }
+                }
+                this.rectangle = function() {
+                    if(this.rect == null)
+                        this.update(snake.length);
+                    return this.rect;
+                }
+                this.update = function(length) {
                     let segmentLength = length;
                     if(this.nextSegment != null) {
                         switch (direction) {
@@ -437,51 +464,32 @@
                     let quarterSize = this.size/4               
                     switch (this.direction) {
                         case DIRECTION.UP:
-                            context.rect(this.start.x - quarterSize, this.start.y, this.size/2, segmentLength);
+                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y, this.size/2, segmentLength);
                             break;
                         case DIRECTION.DOWN:
-                            context.rect(this.start.x - quarterSize, this.start.y - segmentLength, this.size/2, segmentLength);
+                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y - segmentLength, this.size/2, segmentLength);
                             break;
                         case DIRECTION.LEFT:
-                            context.rect(this.start.x , this.start.y - quarterSize, segmentLength, this.size/2);
+                            this.rect = new Rectangle(this.start.x , this.start.y - quarterSize, segmentLength, this.size/2);
                             break;
                         case DIRECTION.RIGHT:   
-                            context.rect(this.start.x - segmentLength, this.start.y - quarterSize, segmentLength, this.size/2);
+                            this.rect = new Rectangle(this.start.x - segmentLength, this.start.y - quarterSize, segmentLength, this.size/2);
                             break;
                         default:
                             break;
                     }
-                    
-
-                    let saveFillStyle = context.fillStyle;
-                    context.fillStyle = "blue";
-                    context.strokeStyle = "black";
-                    context.fill();
-                    context.stroke();
-
-                    context.fillStyle = saveFillStyle;
-
-                    context.closePath();
 
                     if (this.nextSegment != null) {
                         let remainingLength = length - segmentLength;
                         if(remainingLength <= 0) {
-                            // The has moved past the next segment so delete it.
+                            // The segment has moved past the next segment so delete it.
                             this.nextSegment = null;
                         }
                         else {
-                            this.nextSegment.draw(remainingLength);
+                            this.nextSegment.update(remainingLength);
                         }                       
                     }
                 }
-                this.move = function(length) {
-
-
-                    if (this.nextSegment != null) {
-                        this.nextSegment.move();
-                    }
-                }
-
             }
         
             document.addEventListener('keydown', function(e) {
