@@ -16,6 +16,7 @@
             };
 
             const SNAKE_SIZE = 16;
+            const SNAKE_SPEED = 3;
             const SNAKE_START_X = 110;
             const SNAKE_START_Y = 210;
             const SNAKE_START_DIRECTION = DIRECTION.DOWN;
@@ -79,13 +80,13 @@
 
             function Food(centerX, centerY) {
                 this.center = { x : centerX, y : centerY },
-                this.radius = 8,
+                this.size = SNAKE_SIZE,
                 this.draw = function() {
                     var canvas = document.getElementById("SnakeCanvas");
                     var context = canvas.getContext("2d");
                     context.beginPath();
 
-                    context.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
+                    context.arc(this.center.x, this.center.y, this.size/2, 0, 2 * Math.PI);
                     let saveFillStyle = context.fillStyle;
                     context.fillStyle = "yellow";
                     context.strokeStyle = "black";
@@ -95,6 +96,14 @@
                     context.fillStyle = saveFillStyle;
 
                     context.closePath();
+                }
+                this.rectangle = function() {
+                    return new Rectangle(
+                        this.center.x - this.size/2, 
+                        this.center.y - this.size/2, 
+                        this.size, 
+                        this.size
+                    );
                 }
             }
 
@@ -157,20 +166,21 @@
                 this.width = width,
                 this.height = height,
                 this.checkCollision = function(rectangle) {
-                    // Check if the argument is a Rectangle
+                    // check if the argument is a Rectangle
                     if( !(rectangle instanceof Rectangle)) {
                         throw "Invalid Argument";
                     }
 
-                    // Check for collision using axis-aligned bounding box detection
-                    if(this.x < rectangle.x + rectangle.width &&
-                        this.x + this.width > rectangle.x &&
-                        this.y < rectangle.y + rectangle.height &&
-                        this.y + this.height > rect2.y) {
-                        // Collision detected
+                    // check for collision using axis-aligned bounding box detection
+                    if(this.x < (rectangle.x + rectangle.width) &&
+                        (this.x + this.width) > rectangle.x &&
+                        this.y < (rectangle.y + rectangle.height) &&
+                        (this.y + this.height) > rectangle.y) {
+                        // collision detected
                         return true;
                     }
                     else {
+                        // co collision
                         return false;
                     }
 
@@ -185,33 +195,29 @@
                 size : SNAKE_SIZE,
                 direction : SNAKE_START_DIRECTION,
                 nextDirection : null,
-                speed : 4,
+                speed : SNAKE_SPEED,
                 length : SNAKE_SIZE * 10,
                 lastTurnSquare : null,
                 nextSegment : new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y),
                 checkCollision : function() {
-                    var canvas = document.getElementById("SnakeCanvas");
-                    var halfSize = this.size/2;
-                    var topLeft = { 
+                    let canvas = document.getElementById("SnakeCanvas");
+                    let halfSize = this.size/2;
+                    let topLeft = { 
                         x : this.center.x - halfSize,
                         y : this.center.y - halfSize
                     };
-                    var bottomRight = {
+                    let bottomRight = {
                         x : this.center.x + halfSize,
                         y : this.center.y + halfSize
                     }
+                    
+                    // treat snake head as rectangle
+                    var snakeHeadRect = new Rectangle(topLeft.x, topLeft.y, this.size, this.size);
 
-                    // treat snake head and grubs as circles for simplicity
-                    let snakeRadius = snake.size/2;
-
-                    // there is a collision if the distance is less than the sum of the radii
-                    let distance = Math.sqrt( 
-                        Math.pow(this.center.x - grub.center.x, 2)
-                        + Math.pow(this.center.y - grub.center.y, 2)
-                    );
+                    let foodRect = grub.rectangle();
 
                     var context = canvas.getContext("2d");
-                    if(distance < (snakeRadius + grub.radius)) {
+                    if(snakeHeadRect.checkCollision(foodRect)) {
                         context.font = "15px Arial";
                         context.fillText("Collision", 100, 40);
                     }
