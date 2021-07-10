@@ -17,6 +17,7 @@
 
             const SNAKE_SIZE = 16;
             const SNAKE_SPEED = 3;
+            const SNAKE_START_LENGTH = SNAKE_SIZE * 16;
             const SNAKE_START_X = 110;
             const SNAKE_START_Y = 210;
             const SNAKE_START_DIRECTION = DIRECTION.DOWN;
@@ -196,7 +197,7 @@
                 direction : SNAKE_START_DIRECTION,
                 nextDirection : null,
                 speed : SNAKE_SPEED,
-                length : SNAKE_SIZE * 10,
+                length : SNAKE_START_LENGTH,
                 lastTurnSquare : null,
                 nextSegment : new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y),
                 checkCollision : function() {
