@@ -224,9 +224,11 @@
                     }
 
                     // check if snake collides with itself
-                    if(this.nextSegment != null && this.nextSegment.nextSegment != null) {
-                        // skip first segment as the snake head cannot collide with it
-                        let segment = this.nextSegment.nextSegment;
+                    if(this.nextSegment != null && 
+                        this.nextSegment.nextSegment != null && 
+                        this.nextSegment.nextSegment.nextSegment != null) {
+                        // skip first three segments as the snake head cannot collide with it
+                        let segment = this.nextSegment.nextSegment.nextSegment;
                         while (segment.nextSegment != null) {
                             segment = segment.nextSegment;
                             let segmentRect = segment.rect;
@@ -343,7 +345,10 @@
                         }
                     }
                 },
-                setDirection : function(direction) {    
+                setDirection : function(direction) {
+                    let oldDirection = this.direction; 
+                    
+
                     switch (direction) {
                         case DIRECTION.UP:
                             if (this.direction == DIRECTION.DOWN)
@@ -376,8 +381,13 @@
                         default:
                             break;
                     }
-                    let newSegment = new SnakeSegment(this.direction, this.nextSegment, this.center.x, this.center.y); 
-                    this.nextSegment = newSegment;
+
+                    if(this.direction != this.nextSegment.direction) {
+                        // don't add a segment if going in the same direction
+                        let newSegment = new SnakeSegment(this.direction, this.nextSegment, this.center.x, this.center.y); 
+                        this.nextSegment = newSegment;
+                    }
+                    
                 },
                 setNextDirection : function(direction) {
                     if(this.direction == direction)
