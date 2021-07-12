@@ -15,9 +15,11 @@
                 RIGHT : "RIGHT"
             };
 
+            
             const SNAKE_SIZE = 16;
+            const SNAKE_GROWTH_RATE = 1 * SNAKE_SIZE;
             const SNAKE_SPEED = 3;
-            const SNAKE_START_LENGTH = SNAKE_SIZE * 10;
+            const SNAKE_START_LENGTH = SNAKE_SIZE * 5;
             const SNAKE_START_X = 110;
             const SNAKE_START_Y = 210;
             const SNAKE_START_DIRECTION = DIRECTION.DOWN;
@@ -162,6 +164,17 @@
                     context.fillStyle = saveFillStyle;
                     return;
                 },
+                spawnFood : function () {
+                    // Choose a random row and column
+                    let row = Math.floor(Math.random() * this.rows);
+                    let column = Math.floor(Math.random() * this.columns);
+
+                    // Get center point
+                    let x = column * this.squareSize + this.squareSize/2;
+                    let y = row * this.squareSize + this.squareSize/2;
+
+                    grub = new Food(x, y);
+                }
             }
 
             
@@ -225,7 +238,13 @@
                     if(snakeHeadRect.checkCollision(foodRect)) {
                         context.font = "15px Arial";
                         context.fillText("Collision", 100, 40);
+
+                        this.length += SNAKE_GROWTH_RATE;
+                        
+                        grid.spawnFood();
                     }
+
+                    
 
                     // check if snake collides with itself
                     if(this.nextSegment != null && 
