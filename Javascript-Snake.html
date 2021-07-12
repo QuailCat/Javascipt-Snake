@@ -17,12 +17,14 @@
 
             const SNAKE_SIZE = 16;
             const SNAKE_SPEED = 3;
-            const SNAKE_START_LENGTH = SNAKE_SIZE * 16;
+            const SNAKE_START_LENGTH = SNAKE_SIZE * 10;
             const SNAKE_START_X = 110;
             const SNAKE_START_Y = 210;
             const SNAKE_START_DIRECTION = DIRECTION.DOWN;
 
-            const GRID_SIZE = 20;
+            const GRID_COLUMNS = 20;
+            const GRID_ROWS = 20;
+            const GRID_SQUARE_SIZE = 20;
 
             const Triangle = {
                 fill : function(centerX, centerY, size, direction) {
@@ -111,7 +113,9 @@
             var grub = new Food(210, 210);
 
             const grid = {
-                squareSize : GRID_SIZE,
+                squareSize : GRID_SQUARE_SIZE,
+                rows : GRID_ROWS,
+                columns : GRID_COLUMNS,
                 getSquare : function (x, y) {
                     col = Math.floor(x/this.squareSize);
                     row = Math.floor(y/this.squareSize);
@@ -124,14 +128,14 @@
                         } 
                     };
                 },
-                draw : function(context, width, height) {
+                draw : function(context) {
                     let saveFillStyle = context.fillStyle;
 
                     context.beginPath();
 
                     // Draw background color
                     context.fillStyle = "#996633";
-                    context.rect(0, 0, width, height);
+                    context.rect(0, 0, this.columns * this.squareSize, this.rows * this.squareSize);
                     context.fill();
 
                     context.closePath();
@@ -139,8 +143,8 @@
                     // Draw Grid
                     
                     context.fillStyle = "#999966";
-                    for (let col = 0; col < width/this.squareSize; col++) {
-                        for (let row = 0; row < height/this.squareSize; row++) {
+                    for (let col = 0; col < this.columns; col++) {
+                        for (let row = 0; row < this.rows; row++) {
                             if((col + row) % 2 == 0) {
                                 context.beginPath();
                                 context.rect(col * this.squareSize, 
@@ -157,7 +161,7 @@
                     context.closePath();
                     context.fillStyle = saveFillStyle;
                     return;
-                }
+                },
             }
 
             
@@ -553,7 +557,7 @@
                 context.clearRect(0, 0, canvas.width, canvas.height);
 
                 
-                grid.draw(context, canvas.width, canvas.height);
+                grid.draw(context);
 
                 snake.move();
 
