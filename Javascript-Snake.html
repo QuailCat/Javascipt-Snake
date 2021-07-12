@@ -6,7 +6,7 @@
         </title>
     </head>
     <body>
-        <canvas id="SnakeCanvas" width="400" height="400" style="border:1px solid #000000"></canvas>
+        <canvas id="SnakeCanvas" width="480" height="480" style="border:1px solid #000000"></canvas>
         <script>
             const DIRECTION = {
                 UP    : "UP",
@@ -15,18 +15,19 @@
                 RIGHT : "RIGHT"
             };
 
-            
-            const SNAKE_SIZE = 16;
+            const GRID_COLUMNS = 16;
+            const GRID_ROWS = 16;
+            const GRID_SQUARE_SIZE = 30;
+
+            const SNAKE_SIZE = Math.floor(GRID_SQUARE_SIZE * 0.8);
             const SNAKE_GROWTH_RATE = 1 * SNAKE_SIZE;
-            const SNAKE_SPEED = 3;
+            const SNAKE_SPEED = 4;
             const SNAKE_START_LENGTH = SNAKE_SIZE * 5;
-            const SNAKE_START_X = 110;
-            const SNAKE_START_Y = 210;
+            const SNAKE_START_X = Math.floor(GRID_COLUMNS/4) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
+            const SNAKE_START_Y = Math.floor(GRID_ROWS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
             const SNAKE_START_DIRECTION = DIRECTION.DOWN;
 
-            const GRID_COLUMNS = 20;
-            const GRID_ROWS = 20;
-            const GRID_SQUARE_SIZE = 20;
+            
 
             const Triangle = {
                 fill : function(centerX, centerY, size, direction) {
@@ -240,7 +241,7 @@
                         context.fillText("Collision", 100, 40);
 
                         this.length += SNAKE_GROWTH_RATE;
-                        
+
                         grid.spawnFood();
                     }
 
@@ -477,7 +478,7 @@
                     context.fillStyle = "blue";
                     context.strokeStyle = "black";
                     context.fill();
-                    context.stroke();
+                    //context.stroke();
 
                     context.fillStyle = saveFillStyle;
 
