@@ -27,7 +27,8 @@
             const SNAKE_START_Y = Math.floor(GRID_ROWS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
             const SNAKE_START_DIRECTION = DIRECTION.DOWN;
 
-            
+            const FOOD_START_X = Math.ceil(GRID_COLUMNS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
+            const FOOD_START_Y = Math.ceil(GRID_ROWS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
 
             const Triangle = {
                 fill : function(centerX, centerY, size, direction) {
@@ -113,7 +114,7 @@
                 }
             }
 
-            var grub = new Food(210, 210);
+            var grub = new Food(FOOD_START_X, FOOD_START_Y);
 
             const grid = {
                 squareSize : GRID_SQUARE_SIZE,
