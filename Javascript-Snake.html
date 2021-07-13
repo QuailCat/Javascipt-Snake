@@ -248,11 +248,14 @@
 
                     var context = canvas.getContext("2d");
                     if(snakeHeadRect.checkCollision(foodRect)) {
-                        context.font = "15px Arial";
-                        context.fillText("Collision", 100, 40);
-
+                        // eat and grow
                         this.length += SNAKE_GROWTH_RATE;
 
+                        // generate list of spaces the snake occupies
+                        let occupied = this.getOccupied();
+                        
+
+                        // spawn more food
                         grid.spawnFood();
                     }
 
@@ -313,6 +316,17 @@
                     }
                     Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
                     return;
+                },
+                getOccupied : function() {
+                    let snakeHeadSquare = grid.getSquare(this.center.x, this.center.y);
+                    let occupied = new Set();
+                    occupied.add({ row : snakeHeadSquare.row, col : snakeHeadSquare.col});
+
+                    if(this.nextSegment != null) {
+                        occupied = new Set(occupied, this.nextSegment.getOccupied());
+                    }
+
+                    return occupied;
                 },
                 move : function () {
                     if (this.enabled == false) {
@@ -498,6 +512,26 @@
                     if (this.nextSegment != null) {
                         this.nextSegment.draw();                   
                     }
+                }
+                this.getOccupied = function() {
+                    let occupied = [];
+
+                    if(this.rect != null) {
+                        // calculate the square that contains the top left and bottom right points.
+                        let topLeftSquare = grid.getSquare(this.rect.x, this.rect.y);
+                        let bottomRightSquare = grid.getSquare(this.rect.x, this.rect.y)
+
+                        for(let i = topLeftSquare.row; i <= bottomRightSquare.row; i++) {
+                            for(let j = topLeftSquare.col; j <= bottomRightSquare.col; j++) {
+                                occupied.push( { "row" : i, "col" : j } );
+                            }
+                        }
+
+                        if(this.nextSegment != null) {
+                            occupied = new Set(occupied, this.nextSegment.getOccupied());
+                        }
+                    }
+                    return occupied;
                 }
                 this.rectangle = function() {
                     if(this.rect == null)
