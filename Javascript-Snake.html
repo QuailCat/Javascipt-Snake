@@ -16,6 +16,7 @@
         }
     </style>
     <body>
+        <canvas id="SnakeScoreboard" width="480" height="60" style="border:1px solid #000000"></canvas>
         <canvas id="SnakeCanvas" width="480" height="480" style="border:1px solid #000000"></canvas>
         <script>
             const DIRECTION = {
@@ -24,6 +25,8 @@
                 LEFT  : "LEFT",
                 RIGHT : "RIGHT"
             };
+
+            const POINTS_PER_FOOD = 10;
 
             const GRID_COLUMNS = 16;
             const GRID_ROWS = 16;
@@ -125,6 +128,37 @@
             }
 
             var grub = new Food(FOOD_START_X, FOOD_START_Y);
+
+            const scoreBoard = {
+                score : 0,
+                highScore : 0,
+                addToScore : function(points) {
+                    this.score += points;
+                    this.highScore = Math.max(this.highScore, this.score);
+                },
+                draw : function() {
+                    let canvas = document.getElementById("SnakeScoreboard");
+                    let ctx = canvas.getContext('2d');
+                    ctx.beginPath();
+
+                    ctx.rect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "green";
+                    ctx.fill();
+                    
+                    ctx.closePath();
+
+
+
+                    ctx.font = "20px arial";
+                    ctx.fillStyle = "black";
+
+                    // current score
+                    ctx.fillText('Score: ' + this.score, 60, 50);
+
+                    // high score
+                    ctx.fillText('High Score: ' + this.highScore, 300, 50);
+                }
+            }
 
             const grid = {
                 squareSize : GRID_SQUARE_SIZE,
@@ -260,6 +294,7 @@
                     if(snakeHeadRect.checkCollision(foodRect)) {
                         // eat and grow
                         this.length += SNAKE_GROWTH_RATE;
+                        scoreBoard.addToScore(POINTS_PER_FOOD);
 
                         // generate list of spaces the snake occupies
                         let occupied = this.getOccupied();
@@ -638,6 +673,7 @@
 
                 snake.draw();
                 grub.draw();
+                scoreBoard.draw();
 
                 snake.checkCollision();
                 
