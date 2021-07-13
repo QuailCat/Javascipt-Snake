@@ -176,15 +176,25 @@
                     context.fillStyle = saveFillStyle;
                     return;
                 },
-                spawnFood : function () {
-                    // Choose a random row and column
-                    let row = Math.floor(Math.random() * this.rows);
-                    let column = Math.floor(Math.random() * this.columns);
+                spawnFood : function (occupied) {
+                    // Get the array of unoccupied squares
+                    let unoccupiedSquares = [];
+                    for(let i = 0; i < this.rows; i++) {
+                        for(let j = 0; j < this.columns; j++) {
+                            let key = i + "," + j;
+                            if(!occupied.includes(key)){
+                                unoccupiedSquares.push( {"row" : i, "col": j} );
+                            }     
+                        }
+                    }
+
+                    // Choose a random unoccupied square
+                    let randomSquare = unoccupiedSquares[Math.floor(Math.random() * unoccupiedSquares.length)];
 
                     // Get center point
-                    let x = column * this.squareSize + this.squareSize/2;
-                    let y = row * this.squareSize + this.squareSize/2;
-
+                    let x = randomSquare.col * this.squareSize + this.squareSize/2;
+                    let y = randomSquare.row * this.squareSize + this.squareSize/2;
+                    
                     grub = new Food(x, y);
                 }
             }
@@ -254,9 +264,8 @@
                         // generate list of spaces the snake occupies
                         let occupied = this.getOccupied();
                         
-
                         // spawn more food
-                        grid.spawnFood();
+                        grid.spawnFood(occupied);
                     }
 
                     
@@ -319,13 +328,13 @@
                 },
                 getOccupied : function() {
                     let snakeHeadSquare = grid.getSquare(this.center.x, this.center.y);
-                    let occupied = new Set();
-                    occupied.add({ row : snakeHeadSquare.row, col : snakeHeadSquare.col});
+                    let occupied = [];
+                    occupied.push( snakeHeadSquare.row + "," + snakeHeadSquare.col );
 
                     if(this.nextSegment != null) {
-                        occupied = new Set(occupied, this.nextSegment.getOccupied());
+                        // merge occupied with segments
+                        occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
                     }
-
                     return occupied;
                 },
                 move : function () {
@@ -519,16 +528,17 @@
                     if(this.rect != null) {
                         // calculate the square that contains the top left and bottom right points.
                         let topLeftSquare = grid.getSquare(this.rect.x, this.rect.y);
-                        let bottomRightSquare = grid.getSquare(this.rect.x, this.rect.y)
-
+                        let bottomRightSquare = grid.getSquare(this.rect.x + this.rect.width, this.rect.y + this.rect.height);
+                        
                         for(let i = topLeftSquare.row; i <= bottomRightSquare.row; i++) {
                             for(let j = topLeftSquare.col; j <= bottomRightSquare.col; j++) {
-                                occupied.push( { "row" : i, "col" : j } );
+                                occupied.push( i + "," + j );
                             }
                         }
 
-                        if(this.nextSegment != null) {
-                            occupied = new Set(occupied, this.nextSegment.getOccupied());
+                        if(this.nextSegment != null) {     
+                            // merge this occupied with later segments
+                            occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
                         }
                     }
                     return occupied;
