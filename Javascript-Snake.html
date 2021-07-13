@@ -5,8 +5,18 @@
             Javascript-Snake
         </title>
     </head>
+    <style>
+        canvas {
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            width: 480px;
+        }
+    </style>
     <body>
-        <canvas id="SnakeCanvas" width="400" height="400" style="border:1px solid #000000"></canvas>
+        <canvas id="SnakeCanvas" width="480" height="480" style="border:1px solid #000000"></canvas>
         <script>
             const DIRECTION = {
                 UP    : "UP",
@@ -15,14 +25,20 @@
                 RIGHT : "RIGHT"
             };
 
-            const SNAKE_SIZE = 16;
-            const SNAKE_SPEED = 3;
-            const SNAKE_START_LENGTH = SNAKE_SIZE * 16;
-            const SNAKE_START_X = 110;
-            const SNAKE_START_Y = 210;
+            const GRID_COLUMNS = 16;
+            const GRID_ROWS = 16;
+            const GRID_SQUARE_SIZE = 30;
+
+            const SNAKE_SIZE = Math.floor(GRID_SQUARE_SIZE * 0.8);
+            const SNAKE_GROWTH_RATE = 1 * SNAKE_SIZE;
+            const SNAKE_SPEED = 4;
+            const SNAKE_START_LENGTH = SNAKE_SIZE * 5;
+            const SNAKE_START_X = Math.floor(GRID_COLUMNS/4) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
+            const SNAKE_START_Y = Math.floor(GRID_ROWS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
             const SNAKE_START_DIRECTION = DIRECTION.DOWN;
 
-            const GRID_SIZE = 20;
+            const FOOD_START_X = Math.ceil(GRID_COLUMNS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
+            const FOOD_START_Y = Math.ceil(GRID_ROWS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
 
             const Triangle = {
                 fill : function(centerX, centerY, size, direction) {
@@ -108,10 +124,12 @@
                 }
             }
 
-            var grub = new Food(210, 210);
+            var grub = new Food(FOOD_START_X, FOOD_START_Y);
 
             const grid = {
-                squareSize : GRID_SIZE,
+                squareSize : GRID_SQUARE_SIZE,
+                rows : GRID_ROWS,
+                columns : GRID_COLUMNS,
                 getSquare : function (x, y) {
                     col = Math.floor(x/this.squareSize);
                     row = Math.floor(y/this.squareSize);
@@ -124,14 +142,14 @@
                         } 
                     };
                 },
-                draw : function(context, width, height) {
+                draw : function(context) {
                     let saveFillStyle = context.fillStyle;
 
                     context.beginPath();
 
                     // Draw background color
                     context.fillStyle = "#996633";
-                    context.rect(0, 0, width, height);
+                    context.rect(0, 0, this.columns * this.squareSize, this.rows * this.squareSize);
                     context.fill();
 
                     context.closePath();
@@ -139,8 +157,8 @@
                     // Draw Grid
                     
                     context.fillStyle = "#999966";
-                    for (let col = 0; col < width/this.squareSize; col++) {
-                        for (let row = 0; row < height/this.squareSize; row++) {
+                    for (let col = 0; col < this.columns; col++) {
+                        for (let row = 0; row < this.rows; row++) {
                             if((col + row) % 2 == 0) {
                                 context.beginPath();
                                 context.rect(col * this.squareSize, 
@@ -157,6 +175,27 @@
                     context.closePath();
                     context.fillStyle = saveFillStyle;
                     return;
+                },
+                spawnFood : function (occupied) {
+                    // Get the array of unoccupied squares
+                    let unoccupiedSquares = [];
+                    for(let i = 0; i < this.rows; i++) {
+                        for(let j = 0; j < this.columns; j++) {
+                            let key = i + "," + j;
+                            if(!occupied.includes(key)){
+                                unoccupiedSquares.push( {"row" : i, "col": j} );
+                            }     
+                        }
+                    }
+
+                    // Choose a random unoccupied square
+                    let randomSquare = unoccupiedSquares[Math.floor(Math.random() * unoccupiedSquares.length)];
+
+                    // Get center point
+                    let x = randomSquare.col * this.squareSize + this.squareSize/2;
+                    let y = randomSquare.row * this.squareSize + this.squareSize/2;
+                    
+                    grub = new Food(x, y);
                 }
             }
 
@@ -219,9 +258,17 @@
 
                     var context = canvas.getContext("2d");
                     if(snakeHeadRect.checkCollision(foodRect)) {
-                        context.font = "15px Arial";
-                        context.fillText("Collision", 100, 40);
+                        // eat and grow
+                        this.length += SNAKE_GROWTH_RATE;
+
+                        // generate list of spaces the snake occupies
+                        let occupied = this.getOccupied();
+                        
+                        // spawn more food
+                        grid.spawnFood(occupied);
                     }
+
+                    
 
                     // check if snake collides with itself
                     if(this.nextSegment != null && 
@@ -278,6 +325,17 @@
                     }
                     Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
                     return;
+                },
+                getOccupied : function() {
+                    let snakeHeadSquare = grid.getSquare(this.center.x, this.center.y);
+                    let occupied = [];
+                    occupied.push( snakeHeadSquare.row + "," + snakeHeadSquare.col );
+
+                    if(this.nextSegment != null) {
+                        // merge occupied with segments
+                        occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
+                    }
+                    return occupied;
                 },
                 move : function () {
                     if (this.enabled == false) {
@@ -454,7 +512,7 @@
                     context.fillStyle = "blue";
                     context.strokeStyle = "black";
                     context.fill();
-                    context.stroke();
+                    //context.stroke();
 
                     context.fillStyle = saveFillStyle;
 
@@ -463,6 +521,27 @@
                     if (this.nextSegment != null) {
                         this.nextSegment.draw();                   
                     }
+                }
+                this.getOccupied = function() {
+                    let occupied = [];
+
+                    if(this.rect != null) {
+                        // calculate the square that contains the top left and bottom right points.
+                        let topLeftSquare = grid.getSquare(this.rect.x, this.rect.y);
+                        let bottomRightSquare = grid.getSquare(this.rect.x + this.rect.width, this.rect.y + this.rect.height);
+                        
+                        for(let i = topLeftSquare.row; i <= bottomRightSquare.row; i++) {
+                            for(let j = topLeftSquare.col; j <= bottomRightSquare.col; j++) {
+                                occupied.push( i + "," + j );
+                            }
+                        }
+
+                        if(this.nextSegment != null) {     
+                            // merge this occupied with later segments
+                            occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
+                        }
+                    }
+                    return occupied;
                 }
                 this.rectangle = function() {
                     if(this.rect == null)
@@ -553,7 +632,7 @@
                 context.clearRect(0, 0, canvas.width, canvas.height);
 
                 
-                grid.draw(context, canvas.width, canvas.height);
+                grid.draw(context);
 
                 snake.move();
 
