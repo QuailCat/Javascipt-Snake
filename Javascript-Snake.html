@@ -26,6 +26,9 @@
                 RIGHT : "RIGHT"
             };
 
+            
+
+            
             const POINTS_PER_FOOD = 10;
 
             const GRID_COLUMNS = 16;
@@ -261,19 +264,19 @@
                 }
             }
 
-            var snake = {
-                enabled : false,
-                center : { x : SNAKE_START_X, y : SNAKE_START_Y },
-                dx : 0,
-                dy : 0,
-                size : SNAKE_SIZE,
-                direction : SNAKE_START_DIRECTION,
-                nextDirection : null,
-                speed : SNAKE_SPEED,
-                length : SNAKE_START_LENGTH,
-                lastTurnSquare : null,
-                nextSegment : new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y),
-                checkCollision : function() {
+            function Snake() {
+                this.enabled = false;
+                this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
+                this.dx = 0;
+                this.dy = 0;
+                this.size = SNAKE_SIZE;
+                this.direction = SNAKE_START_DIRECTION;
+                this.nextDirection = null;
+                this.speed = SNAKE_SPEED;
+                this.length = SNAKE_START_LENGTH;
+                this.lastTurnSquare = null;
+                this.nextSegment = new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y);
+                this.checkCollision = function() {
                     let canvas = document.getElementById("SnakeCanvas");
                     let halfSize = this.size/2;
                     let topLeft = { 
@@ -351,8 +354,8 @@
                         this.center.y = canvas.width - halfSize;
                         this.enabled = false;
                     }
-                },
-                draw : function() {
+                };
+                this.draw = function() {
                     
                     if(this.nextSegment != null) {
                         this.nextSegment.update(this.length);
@@ -360,8 +363,8 @@
                     }
                     Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
                     return;
-                },
-                getOccupied : function() {
+                };
+                this.getOccupied = function() {
                     let snakeHeadSquare = grid.getSquare(this.center.x, this.center.y);
                     let occupied = [];
                     occupied.push( snakeHeadSquare.row + "," + snakeHeadSquare.col );
@@ -371,8 +374,8 @@
                         occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
                     }
                     return occupied;
-                },
-                move : function () {
+                };
+                this.move = function () {
                     if (this.enabled == false) {
                         return;
                     }
@@ -437,8 +440,8 @@
                             }
                         }
                     }
-                },
-                setDirection : function(direction) {
+                };
+                this.setDirection = function(direction) {
                     let oldDirection = this.direction; 
                     
 
@@ -481,8 +484,8 @@
                         this.nextSegment = newSegment;
                     }
                     
-                },
-                setNextDirection : function(direction) {
+                };
+                this.setNextDirection = function(direction) {
                     if(this.direction == direction)
                         return;
 
@@ -518,8 +521,8 @@
                         default:
                             break;
                     }
-                },
-                setCenter : function(x, y) {
+                };
+                this.setCenter = function(x, y) {
                     this.center.x = x;
                     this.center.y = y;
 
@@ -527,8 +530,10 @@
                         this.nextSegment.start.x = this.center.x;
                         this.nextSegment.start.y = this.center.y;
                     }
-                }
-            };
+                };
+            }
+
+            var snake = new Snake();
 
             function SnakeSegment(direction, nextSegment, startX, startY) {
                 this.start = { x : startX, y : startY },
@@ -635,6 +640,9 @@
                 }
             }
         
+
+
+
             document.addEventListener('keydown', function(e) {
                 var code = e.which || e.keyCode;
                 if(snake.enabled == false) {
