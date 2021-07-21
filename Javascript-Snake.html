@@ -347,7 +347,7 @@
                 this.length = SNAKE_START_LENGTH;
                 this.lastTurnSquare = null;
                 this.nextSegment = new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y);
-                this.checkCollision = function() {
+                this.checkCollision = function(collisionCallBack) {
                     let canvas = document.getElementById("SnakeCanvas");
                     let halfSize = this.size/2;
                     let topLeft = { 
@@ -393,11 +393,13 @@
                                 this.dx = 0;
                                 this.dy = 0;
                                 snake.enabled = false;
+                                if(collisionCallBack != null) {
+                                    collisionCallBack();
+                                }
                             }
 
                         }
                     }
-                        
 
 
                     // check if snake head is still on canvas
@@ -824,7 +826,7 @@
                 grub.draw();
                 scoreBoard.draw();
 
-                snake.checkCollision();
+                snake.checkCollision(snakeGame.showMenu);
                 
             }
 
