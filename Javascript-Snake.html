@@ -80,7 +80,7 @@
         <canvas id="SnakeScoreboard" width="480" height="60" style="border:1px solid #000000"></canvas>
         <canvas id="SnakeCanvas" width="480" height="480" style="border:1px solid #000000"></canvas>
         <div id="menuModal" class="modal">
-            <div class="modal-content">
+            <div class="modal-content" onshow="snakeGame.pause()">
                 <!--<span class="close">&times;</span> -->
                 <!-- <p>Some text in the Modal...</p> -->
                 <div class="center">
@@ -708,9 +708,12 @@
                             this.nextSegment.update(remainingLength);
                         }                       
                     }
+
                 }
             }
         
+            
+
             function SnakeGame() {
                 this.running = false;
                 this.food = new Food(FOOD_START_X, FOOD_START_Y);
@@ -735,16 +738,27 @@
                     menu.style.display = "none";
 
                     scoreBoard.reset();
+
+                    this.start();
                 };
-                this.start = function() {
+                this.resume = function() {
 
                     this.running = true;
                     snake.enabled = true;
                 };
+                this.showMenu = function() {
+                    snakeGame.pause();
+                    modal.style.display = "block";
+                }
+                this.start = function() {
+                    this.running = true;
+                }
             }
 
             var snakeGame = new SnakeGame();
             var modal = document.getElementById("menuModal");
+            
+            
             // Get the <span> element that closes the modal
             /*var span = document.getElementsByClassName("close")[0];
             span.onclick = function() {
@@ -752,14 +766,18 @@
                 snakeGame.start();
             }*/
 
-            window.onclick = function(event) {
+            /* window.onclick = function(event) {
                 if (event.target == modal) {
                     modal.style.display = "none";
                 }
-            }
+            } */
 
             document.addEventListener('keydown', function(e) {
                 var code = e.which || e.keyCode;
+                if(snakeGame.running == false) {
+                    return;
+                }
+
                 if(snake.enabled == false) {
                     snake.enabled = true;
                     snake.setDirection(snake.direction);
@@ -783,13 +801,11 @@
                 }
                 else if (code == '27') {
                     // Esc
-                    snakeGame.pause();
-                    //snakeGame.reset();
+                    snakeGame.showMenu();
                     
-
-                    
-                    modal.style.display = "block"
                 }
+                   
+                    
             });
 
             var count = 0;
@@ -813,6 +829,7 @@
             }
 
             setInterval(draw, 20);
+            snakeGame.start();
         </script>
     </body>
 </html>
