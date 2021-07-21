@@ -404,28 +404,44 @@
 
                     // check if snake head is still on canvas
                     if(topLeft.x < 0) {
+                        // Left
                         this.dx = 0;
                         this.dy = 0;
                         this.center.x = 0 + halfSize;
                         this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
                     } 
                     else if (topLeft.y < 0) {
+                        // Top
                         this.dx = 0;
                         this.dy = 0;
                         this.center.y = 0 + halfSize;
                         this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
                     } 
                     else if (bottomRight.x > canvas.width) {
+                        // Right
                         this.dx = 0;
                         this.dy = 0;
                         this.center.x = canvas.width - halfSize;
                         this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
                     }
                     else if (bottomRight.y > canvas.width) {
+                        // Bottom
                         this.dx = 0;
                         this.dy = 0;
                         this.center.y = canvas.width - halfSize;
                         this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
                     }
                 };
                 this.draw = function() {
