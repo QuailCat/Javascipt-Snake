@@ -31,12 +31,18 @@
 
         /* Modal Content/Box */
         .modal-content {
-            border-radius: 25px;
+            border-radius: 10px;
             background-color: #fefefe;
-            margin: 15% auto; /* 15% from the top and centered */
+            margin:15% auto; /* 15% from the top and centered */
             padding: 20px;
             border: 1px solid #888;
-            width: 100px; /* Could be more or less, depending on screen size */
+            width: fit-content;
+        }
+
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         /* The Close Button */
@@ -57,22 +63,30 @@
         .button {
             background-color: #4CAF50; /* Green */
             border: none;
+            border-radius: 10px;
             color: white;
-            padding: 15px 32px;
+            padding: 15px;
+            margin: 0 auto;
             text-align: center;
             text-decoration: none;
             display: inline-block;
             font-size: 16px;
+            cursor: pointer;
         }
+
+
     </style>
     <body>
         <canvas id="SnakeScoreboard" width="480" height="60" style="border:1px solid #000000"></canvas>
         <canvas id="SnakeCanvas" width="480" height="480" style="border:1px solid #000000"></canvas>
         <div id="menuModal" class="modal">
             <div class="modal-content">
-                <span class="close">&times;</span>
-                <p>Some text in the Modal...</p>
-                <button onclick="snakeGame.reset()">Restart</button>
+                <!--<span class="close">&times;</span> -->
+                <!-- <p>Some text in the Modal...</p> -->
+                <div class="center">
+                    <button class="button"  onclick="snakeGame.reset()">Restart</button>
+                </div>
+                
             </div>
         </div>
         <script>
@@ -732,11 +746,11 @@
             var snakeGame = new SnakeGame();
             var modal = document.getElementById("menuModal");
             // Get the <span> element that closes the modal
-            var span = document.getElementsByClassName("close")[0];
+            /*var span = document.getElementsByClassName("close")[0];
             span.onclick = function() {
                 modal.style.display = "none";
                 snakeGame.start();
-            }
+            }*/
 
             window.onclick = function(event) {
                 if (event.target == modal) {
