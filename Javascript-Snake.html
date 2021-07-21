@@ -14,10 +14,67 @@
             display: block;
             width: 480px;
         }
+
+         /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content/Box */
+        .modal-content {
+            border-radius: 25px;
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 100px; /* Could be more or less, depending on screen size */
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        } 
+
+        .button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
     </style>
     <body>
         <canvas id="SnakeScoreboard" width="480" height="60" style="border:1px solid #000000"></canvas>
         <canvas id="SnakeCanvas" width="480" height="480" style="border:1px solid #000000"></canvas>
+        <div id="menuModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Some text in the Modal...</p>
+                <button onclick="snakeGame.reset()">Restart</button>
+            </div>
+        </div>
         <script>
             const DIRECTION = {
                 UP    : "UP",
@@ -25,10 +82,7 @@
                 LEFT  : "LEFT",
                 RIGHT : "RIGHT"
             };
-
-            
-
-            
+   
             const POINTS_PER_FOOD = 10;
 
             const GRID_COLUMNS = 16;
@@ -160,6 +214,9 @@
 
                     // high score
                     ctx.fillText('High Score: ' + this.highScore, 300, 50);
+                },
+                reset : function() {
+                    this.score = 0;
                 }
             }
 
@@ -640,8 +697,52 @@
                 }
             }
         
+            function SnakeGame() {
+                this.running = false;
+                this.food = new Food(FOOD_START_X, FOOD_START_Y);
+                this.snake = null;
+                this.init = function() {
 
+                };
+                this.pause = function() {
+                    this.running = false;
 
+                    snake.enabled = false;
+                }
+                this.reset = function() {
+                    this.pause();
+
+                    // set all values to default
+                    snake = new Snake();
+                    grub = new Food(FOOD_START_X, FOOD_START_Y);
+
+                    // Close menu if it is open
+                    let menu = document.getElementById("menuModal");
+                    menu.style.display = "none";
+
+                    scoreBoard.reset();
+                };
+                this.start = function() {
+
+                    this.running = true;
+                    snake.enabled = true;
+                };
+            }
+
+            var snakeGame = new SnakeGame();
+            var modal = document.getElementById("menuModal");
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("close")[0];
+            span.onclick = function() {
+                modal.style.display = "none";
+                snakeGame.start();
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
 
             document.addEventListener('keydown', function(e) {
                 var code = e.which || e.keyCode;
@@ -666,8 +767,18 @@
                     // Right
                     snake.setNextDirection(DIRECTION.RIGHT);
                 }
+                else if (code == '27') {
+                    // Esc
+                    snakeGame.pause();
+                    //snakeGame.reset();
+                    
+
+                    
+                    modal.style.display = "block"
+                }
             });
 
+            var count = 0;
             function draw() {
                 var canvas = document.getElementById("SnakeCanvas");
                 var context = canvas.getContext("2d");
