@@ -14,10 +14,81 @@
             display: block;
             width: 480px;
         }
+
+         /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content/Box */
+        .modal-content {
+            border-radius: 10px;
+            background-color: #fefefe;
+            margin:15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: fit-content;
+        }
+
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        } 
+
+        .button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            border-radius: 10px;
+            color: white;
+            padding: 15px;
+            margin: 0 auto;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+
     </style>
     <body>
         <canvas id="SnakeScoreboard" width="480" height="60" style="border:1px solid #000000"></canvas>
         <canvas id="SnakeCanvas" width="480" height="480" style="border:1px solid #000000"></canvas>
+        <div id="menuModal" class="modal">
+            <div class="modal-content" onshow="snakeGame.pause()">
+                <!--<span class="close">&times;</span> -->
+                <!-- <p>Some text in the Modal...</p> -->
+                <div class="center">
+                    <button class="button"  onclick="snakeGame.reset()">Restart</button>
+                </div>
+                
+            </div>
+        </div>
         <script>
             const DIRECTION = {
                 UP    : "UP",
@@ -25,7 +96,7 @@
                 LEFT  : "LEFT",
                 RIGHT : "RIGHT"
             };
-
+   
             const POINTS_PER_FOOD = 10;
 
             const GRID_COLUMNS = 16;
@@ -157,6 +228,9 @@
 
                     // high score
                     ctx.fillText('High Score: ' + this.highScore, 300, 50);
+                },
+                reset : function() {
+                    this.score = 0;
                 }
             }
 
@@ -261,19 +335,19 @@
                 }
             }
 
-            var snake = {
-                enabled : false,
-                center : { x : SNAKE_START_X, y : SNAKE_START_Y },
-                dx : 0,
-                dy : 0,
-                size : SNAKE_SIZE,
-                direction : SNAKE_START_DIRECTION,
-                nextDirection : null,
-                speed : SNAKE_SPEED,
-                length : SNAKE_START_LENGTH,
-                lastTurnSquare : null,
-                nextSegment : new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y),
-                checkCollision : function() {
+            function Snake() {
+                this.enabled = false;
+                this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
+                this.dx = 0;
+                this.dy = 0;
+                this.size = SNAKE_SIZE;
+                this.direction = SNAKE_START_DIRECTION;
+                this.nextDirection = null;
+                this.speed = SNAKE_SPEED;
+                this.length = SNAKE_START_LENGTH;
+                this.lastTurnSquare = null;
+                this.nextSegment = new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y);
+                this.checkCollision = function(collisionCallBack) {
                     let canvas = document.getElementById("SnakeCanvas");
                     let halfSize = this.size/2;
                     let topLeft = { 
@@ -319,40 +393,58 @@
                                 this.dx = 0;
                                 this.dy = 0;
                                 snake.enabled = false;
+                                if(collisionCallBack != null) {
+                                    collisionCallBack();
+                                }
                             }
 
                         }
                     }
-                        
 
 
                     // check if snake head is still on canvas
                     if(topLeft.x < 0) {
+                        // Left
                         this.dx = 0;
                         this.dy = 0;
                         this.center.x = 0 + halfSize;
                         this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
                     } 
                     else if (topLeft.y < 0) {
+                        // Top
                         this.dx = 0;
                         this.dy = 0;
                         this.center.y = 0 + halfSize;
                         this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
                     } 
                     else if (bottomRight.x > canvas.width) {
+                        // Right
                         this.dx = 0;
                         this.dy = 0;
                         this.center.x = canvas.width - halfSize;
                         this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
                     }
                     else if (bottomRight.y > canvas.width) {
+                        // Bottom
                         this.dx = 0;
                         this.dy = 0;
                         this.center.y = canvas.width - halfSize;
                         this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
                     }
-                },
-                draw : function() {
+                };
+                this.draw = function() {
                     
                     if(this.nextSegment != null) {
                         this.nextSegment.update(this.length);
@@ -360,8 +452,8 @@
                     }
                     Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
                     return;
-                },
-                getOccupied : function() {
+                };
+                this.getOccupied = function() {
                     let snakeHeadSquare = grid.getSquare(this.center.x, this.center.y);
                     let occupied = [];
                     occupied.push( snakeHeadSquare.row + "," + snakeHeadSquare.col );
@@ -371,8 +463,8 @@
                         occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
                     }
                     return occupied;
-                },
-                move : function () {
+                };
+                this.move = function () {
                     if (this.enabled == false) {
                         return;
                     }
@@ -437,8 +529,8 @@
                             }
                         }
                     }
-                },
-                setDirection : function(direction) {
+                };
+                this.setDirection = function(direction) {
                     let oldDirection = this.direction; 
                     
 
@@ -481,8 +573,8 @@
                         this.nextSegment = newSegment;
                     }
                     
-                },
-                setNextDirection : function(direction) {
+                };
+                this.setNextDirection = function(direction) {
                     if(this.direction == direction)
                         return;
 
@@ -518,8 +610,8 @@
                         default:
                             break;
                     }
-                },
-                setCenter : function(x, y) {
+                };
+                this.setCenter = function(x, y) {
                     this.center.x = x;
                     this.center.y = y;
 
@@ -527,8 +619,10 @@
                         this.nextSegment.start.x = this.center.x;
                         this.nextSegment.start.y = this.center.y;
                     }
-                }
-            };
+                };
+            }
+
+            var snake = new Snake();
 
             function SnakeSegment(direction, nextSegment, startX, startY) {
                 this.start = { x : startX, y : startY },
@@ -632,11 +726,76 @@
                             this.nextSegment.update(remainingLength);
                         }                       
                     }
+
                 }
             }
         
+            
+
+            function SnakeGame() {
+                this.running = false;
+                this.food = new Food(FOOD_START_X, FOOD_START_Y);
+                this.snake = null;
+                this.init = function() {
+
+                };
+                this.pause = function() {
+                    this.running = false;
+
+                    snake.enabled = false;
+                }
+                this.reset = function() {
+                    this.pause();
+
+                    // set all values to default
+                    snake = new Snake();
+                    grub = new Food(FOOD_START_X, FOOD_START_Y);
+
+                    // Close menu if it is open
+                    let menu = document.getElementById("menuModal");
+                    menu.style.display = "none";
+
+                    scoreBoard.reset();
+
+                    this.start();
+                };
+                this.resume = function() {
+
+                    this.running = true;
+                    snake.enabled = true;
+                };
+                this.showMenu = function() {
+                    snakeGame.pause();
+                    modal.style.display = "block";
+                }
+                this.start = function() {
+                    this.running = true;
+                }
+            }
+
+            var snakeGame = new SnakeGame();
+            var modal = document.getElementById("menuModal");
+            
+            
+            // Get the <span> element that closes the modal
+            /*var span = document.getElementsByClassName("close")[0];
+            span.onclick = function() {
+                modal.style.display = "none";
+                snakeGame.start();
+            }*/
+
+            /* window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            } */
+
             document.addEventListener('keydown', function(e) {
                 var code = e.which || e.keyCode;
+                if(snakeGame.running == false) {
+                    return;
+                }
+
                 if(snake.enabled == false) {
                     snake.enabled = true;
                     snake.setDirection(snake.direction);
@@ -658,8 +817,16 @@
                     // Right
                     snake.setNextDirection(DIRECTION.RIGHT);
                 }
+                else if (code == '27') {
+                    // Esc
+                    snakeGame.showMenu();
+                    
+                }
+                   
+                    
             });
 
+            var count = 0;
             function draw() {
                 var canvas = document.getElementById("SnakeCanvas");
                 var context = canvas.getContext("2d");
@@ -675,11 +842,12 @@
                 grub.draw();
                 scoreBoard.draw();
 
-                snake.checkCollision();
+                snake.checkCollision(snakeGame.showMenu);
                 
             }
 
             setInterval(draw, 20);
+            snakeGame.start();
         </script>
     </body>
 </html>
