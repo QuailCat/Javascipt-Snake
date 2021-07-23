@@ -171,7 +171,7 @@
                 }
             }
 
-            var grub = new Food(FOOD_START_X, FOOD_START_Y);
+            var food = new Food(FOOD_START_X, FOOD_START_Y);
 
             class ScoreBoard {
                 constructor() {
@@ -229,7 +229,7 @@
 
                     // Draw Pupil
                     context.beginPath();
-                    this.setTarget(grub.center.x, grub.center.y);
+                    this.setTarget(food.center.x, food.center.y);
 
                     let vectorLength = Math.sqrt(Math.pow(this.target.x - this.center.x, 2) + Math.pow(this.target.y - this.center.y, 2));
                     let v = { x : this.target.x - this.center.x, y : this.target.y - this.center.y }
@@ -501,7 +501,7 @@
                     let x = randomSquare.col * this.squareSize + this.squareSize/2;
                     let y = randomSquare.row * this.squareSize + this.squareSize/2;
                     
-                    grub = new Food(x, y);
+                    food = new Food(x, y);
                 }
             }
             const grid = new Grid();
@@ -564,7 +564,7 @@
                     // Get snake head hitbox
                     var snakeHeadHitBox = this.head.hitBox;
 
-                    let foodRect = grub.hitBox;
+                    let foodRect = food.hitBox;
 
                     var context = canvas.getContext("2d");
                     if(snakeHeadHitBox.checkCollision(foodRect)) {
@@ -879,7 +879,7 @@
 
                     // set all values to default
                     snake = new Snake();
-                    grub = new Food(FOOD_START_X, FOOD_START_Y);
+                    food = new Food(FOOD_START_X, FOOD_START_Y);
 
                     // Close menu if it is open
                     let menu = document.getElementById("menuModal");
@@ -918,7 +918,7 @@
 
                 snake.move();
 
-                grub.draw();
+                food.draw();
                 snake.draw();
                 
                 scoreBoard.draw();
