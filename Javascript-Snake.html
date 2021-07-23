@@ -280,6 +280,33 @@
 
             }
 
+            function SnakeHead() {
+                this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
+                this.size = SNAKE_SIZE;
+                this.direction = SNAKE_START_DIRECTION;
+                this.eyes = { right : new SnakeEye(this.size/5), left : new SnakeEye(this.size/5) }; 
+                this.draw = function() {
+                    Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
+                    this.eyes.left.setLocation(this.center.x - 6, this.center.y);
+                    this.eyes.right.setLocation(this.center.x + 6, this.center.y);
+
+                    var canvas = document.getElementById("SnakeCanvas");
+                    var context = canvas.getContext("2d");
+                    this.eyes.left.draw(context);
+                    this.eyes.right.draw(context);
+                }
+                this.setDirection = function(direction) {
+                    if(this.direction == direction) {
+                        return;
+                    }
+
+                    this.direction = direction;
+                }
+                this.setCenter = function(x, y) {
+                    this.center = { x , y };
+                }
+            }
+
             const grid = {
                 squareSize : GRID_SQUARE_SIZE,
                 rows : GRID_ROWS,
@@ -383,7 +410,6 @@
 
             function Snake() {
                 this.enabled = false;
-                this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
                 this.dx = 0;
                 this.dy = 0;
                 this.size = SNAKE_SIZE;
@@ -393,17 +419,17 @@
                 this.length = SNAKE_START_LENGTH;
                 this.lastTurnSquare = null;
                 this.nextSegment = new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y);
-                this.eyes = { right : new SnakeEye(this.size/5), left : new SnakeEye(this.size/5) }; 
+                this.head = new SnakeHead();
                 this.checkCollision = function(collisionCallBack) {
                     let canvas = document.getElementById("SnakeCanvas");
                     let halfSize = this.size/2;
                     let topLeft = { 
-                        x : this.center.x - halfSize,
-                        y : this.center.y - halfSize
+                        x : this.head.center.x - halfSize,
+                        y : this.head.center.y - halfSize
                     };
                     let bottomRight = {
-                        x : this.center.x + halfSize,
-                        y : this.center.y + halfSize
+                        x : this.head.center.x + halfSize,
+                        y : this.head.center.y + halfSize
                     }
                     
                     // treat snake head as rectangle
@@ -454,7 +480,7 @@
                         // Left
                         this.dx = 0;
                         this.dy = 0;
-                        this.center.x = 0 + halfSize;
+                        this.head.center.x = 0 + halfSize;
                         this.enabled = false;
                         if(collisionCallBack != null) {
                             collisionCallBack();
@@ -464,7 +490,7 @@
                         // Top
                         this.dx = 0;
                         this.dy = 0;
-                        this.center.y = 0 + halfSize;
+                        this.head.center.y = 0 + halfSize;
                         this.enabled = false;
                         if(collisionCallBack != null) {
                             collisionCallBack();
@@ -474,7 +500,7 @@
                         // Right
                         this.dx = 0;
                         this.dy = 0;
-                        this.center.x = canvas.width - halfSize;
+                        this.head.center.x = canvas.width - halfSize;
                         this.enabled = false;
                         if(collisionCallBack != null) {
                             collisionCallBack();
@@ -484,7 +510,7 @@
                         // Bottom
                         this.dx = 0;
                         this.dy = 0;
-                        this.center.y = canvas.width - halfSize;
+                        this.head.center.y = canvas.width - halfSize;
                         this.enabled = false;
                         if(collisionCallBack != null) {
                             collisionCallBack();
@@ -497,18 +523,13 @@
                         this.nextSegment.update(this.length);
                         this.nextSegment.draw();
                     }
-                    Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
-                    this.eyes.left.setLocation(this.center.x - 5, this.center.y);
-                    this.eyes.right.setLocation(this.center.x + 5, this.center.y);
+                    this.head.draw();
 
-                    var canvas = document.getElementById("SnakeCanvas");
-                    var context = canvas.getContext("2d");
-                    this.eyes.left.draw(context);
-                    this.eyes.right.draw(context);
+                    
                     return;
                 };
                 this.getOccupied = function() {
-                    let snakeHeadSquare = grid.getSquare(this.center.x, this.center.y);
+                    let snakeHeadSquare = grid.getSquare(this.head.center.x, this.head.center.y);
                     let occupied = [];
                     occupied.push( snakeHeadSquare.row + "," + snakeHeadSquare.col );
 
@@ -523,15 +544,16 @@
                         return;
                     }
 
-                    let nextX = this.center.x += this.dx;
-                    let nextY = this.center.y += this.dy;
+                    let nextX = this.head.center.x += this.dx;
+                    let nextY = this.head.center.y += this.dy;
+
 
                     if (this.nextDirection == null || this.direction == this.nextDirection) {
                         // No change so continue in same direction
                         this.setCenter(nextX, nextY);  
                     }
                     else {
-                        let currentSquare = grid.getSquare(this.center.x, this.center.y);
+                        let currentSquare = grid.getSquare(this.head.center.x, this.head.center.y);
                         
                         if(this.lastTurnSquare != null &&
                             this.lastTurnSquare["center"]["x"] == currentSquare["center"]["x"] &&
@@ -543,8 +565,8 @@
 
                         // Check if the snake head passes through the center of the current square
                         if (this.dx != 0 ) {
-                            if ((this.dx < 0 && nextX <= currentSquare["center"]["x"] < this.center.x) ||
-                                (this.dx > 0 && this.center.x < currentSquare["center"]["x"] <= nextX)) {
+                            if ((this.dx < 0 && nextX <= currentSquare["center"]["x"] < this.head.center.x) ||
+                                (this.dx > 0 && this.head.center.x < currentSquare["center"]["x"] <= nextX)) {
                                 
                                 //let remainingMovement = Math.abs(this.dx) - Math.abs(this.center.x - currentSquare["center"]["x"]);
 
@@ -563,8 +585,8 @@
                             }
                         }
                         else if ( this.dy != 0 ) {
-                            if ((this.dy < 0 && nextY <= currentSquare["center"]["y"] < this.center.y) ||
-                                (this.dy > 0 && this.center.y < currentSquare["center"]["y"] <= nextY)) {
+                            if ((this.dy < 0 && nextY <= currentSquare["center"]["y"] < this.head.center.y) ||
+                                (this.dy > 0 && this.head.center.y < currentSquare["center"]["y"] <= nextY)) {
                                 
                                 //let remainingMovement = Math.abs(this.dy) - Math.abs(this.center.y - currentSquare["center"]["y"]);
 
@@ -594,28 +616,32 @@
                                 break;
                             this.dy = -this.speed;
                             this.dx = 0;
-                            this.direction = direction
+                            this.direction = direction;
+                            this.head.setDirection(direction);
                             break;
                         case DIRECTION.DOWN:
                             if (this.direction == DIRECTION.UP)
                                 break;
                             this.dy = this.speed;
                             this.dx = 0;
-                            this.direction = direction
+                            this.direction = direction;
+                            this.head.setDirection(direction);
                             break;
                         case DIRECTION.LEFT:
                             if (this.direction == DIRECTION.RIGHT)
                                 break;
                             this.dy = 0;
                             this.dx = -this.speed;
-                            this.direction = direction
+                            this.direction = direction;
+                            this.head.setDirection(direction);
                             break;
                         case DIRECTION.RIGHT:
                             if (this.direction == DIRECTION.LEFT)
                                 break;
                             this.dy = 0;
                             this.dx = this.speed;
-                            this.direction = direction
+                            this.direction = direction;
+                            this.head.setDirection(direction);
                             break;
                         default:
                             break;
@@ -623,7 +649,7 @@
 
                     if(this.direction != this.nextSegment.direction) {
                         // don't add a segment if going in the same direction
-                        let newSegment = new SnakeSegment(this.direction, this.nextSegment, this.center.x, this.center.y); 
+                        let newSegment = new SnakeSegment(this.direction, this.nextSegment, this.head.center.x, this.head.center.y); 
                         this.nextSegment = newSegment;
                     }
                     
@@ -666,12 +692,11 @@
                     }
                 };
                 this.setCenter = function(x, y) {
-                    this.center.x = x;
-                    this.center.y = y;
+                    this.head.setCenter(x, y);
 
                     if(this.nextSegment != null) {
-                        this.nextSegment.start.x = this.center.x;
-                        this.nextSegment.start.y = this.center.y;
+                        this.nextSegment.start.x = this.head.center.x;
+                        this.nextSegment.start.y = this.head.center.y;
                     }
                 };
             }
