@@ -320,6 +320,114 @@
                 }
             }
 
+            class SnakeSegment {
+                constructor(direction, nextSegment, startX, startY){
+                    this.start = { x : startX, y : startY },
+                    this.direction = direction;
+                    this.nextSegment = nextSegment;
+                    this.size = SNAKE_SIZE;
+                    this.rect = null;
+                }  
+                draw() {
+                    var canvas = document.getElementById("SnakeCanvas");
+                    var context = canvas.getContext("2d");
+                    context.beginPath();
+
+                    context.rect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+                    
+                    let saveFillStyle = context.fillStyle;
+                    context.fillStyle = "blue";
+                    context.strokeStyle = "black";
+                    context.fill();
+                    //context.stroke();
+
+                    context.fillStyle = saveFillStyle;
+
+                    context.closePath();
+
+                    if (this.nextSegment != null) {
+                        this.nextSegment.draw();                   
+                    }
+                }
+                getOccupied() {
+                    let occupied = [];
+
+                    if(this.rect != null) {
+                        // calculate the square that contains the top left and bottom right points.
+                        let topLeftSquare = grid.getSquare(this.rect.x, this.rect.y);
+                        let bottomRightSquare = grid.getSquare(this.rect.x + this.rect.width, this.rect.y + this.rect.height);
+                        
+                        for(let i = topLeftSquare.row; i <= bottomRightSquare.row; i++) {
+                            for(let j = topLeftSquare.col; j <= bottomRightSquare.col; j++) {
+                                occupied.push( i + "," + j );
+                            }
+                        }
+
+                        if(this.nextSegment != null) {     
+                            // merge this occupied with later segments
+                            occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
+                        }
+                    }
+                    return occupied;
+                }
+                rectangle() {
+                    if(this.rect == null)
+                        this.update(snake.length);
+                    return this.rect;
+                }
+                update(length) {
+                    let segmentLength = length;
+                    if(this.nextSegment != null) {
+                        switch (this.direction) {
+                            case DIRECTION.UP:
+                                segmentLength = Math.min(length, this.nextSegment.start.y - this.start.y);
+                                break;
+                            case DIRECTION.DOWN:
+                                segmentLength = Math.min(length, this.start.y - this.nextSegment.start.y);
+                                break;
+                            case DIRECTION.LEFT:
+                                segmentLength = Math.min(length, this.nextSegment.start.x - this.start.x);
+                                break;
+                            case DIRECTION.RIGHT:   
+                                segmentLength = Math.min(length, this.start.x - this.nextSegment.start.x);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    let quarterSize = this.size/4               
+                    switch (this.direction) {
+                        case DIRECTION.UP:
+                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y, this.size/2, segmentLength);
+                            break;
+                        case DIRECTION.DOWN:
+                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y - segmentLength, this.size/2, segmentLength);
+                            break;
+                        case DIRECTION.LEFT:
+                            this.rect = new Rectangle(this.start.x , this.start.y - quarterSize, segmentLength, this.size/2);
+                            break;
+                        case DIRECTION.RIGHT:   
+                            this.rect = new Rectangle(this.start.x - segmentLength, this.start.y - quarterSize, segmentLength, this.size/2);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (this.nextSegment != null) {
+                        let remainingLength = length - segmentLength;
+                        if(remainingLength <= 0) {
+                            // The segment has moved past the next segment so delete it.
+                            this.nextSegment = null;
+                        }
+                        else {
+                            this.nextSegment.update(remainingLength);
+                        }                       
+                    }
+
+                }
+            }
+
             const grid = {
                 squareSize : GRID_SQUARE_SIZE,
                 rows : GRID_ROWS,
@@ -716,111 +824,7 @@
 
             var snake = new Snake();
 
-            function SnakeSegment(direction, nextSegment, startX, startY) {
-                this.start = { x : startX, y : startY },
-                this.direction = direction;
-                this.nextSegment = nextSegment;
-                this.size = SNAKE_SIZE;
-                this.rect = null;
-                this.draw = function() {
-                    var canvas = document.getElementById("SnakeCanvas");
-                    var context = canvas.getContext("2d");
-                    context.beginPath();
-
-                    context.rect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
-                    
-                    let saveFillStyle = context.fillStyle;
-                    context.fillStyle = "blue";
-                    context.strokeStyle = "black";
-                    context.fill();
-                    //context.stroke();
-
-                    context.fillStyle = saveFillStyle;
-
-                    context.closePath();
-
-                    if (this.nextSegment != null) {
-                        this.nextSegment.draw();                   
-                    }
-                }
-                this.getOccupied = function() {
-                    let occupied = [];
-
-                    if(this.rect != null) {
-                        // calculate the square that contains the top left and bottom right points.
-                        let topLeftSquare = grid.getSquare(this.rect.x, this.rect.y);
-                        let bottomRightSquare = grid.getSquare(this.rect.x + this.rect.width, this.rect.y + this.rect.height);
-                        
-                        for(let i = topLeftSquare.row; i <= bottomRightSquare.row; i++) {
-                            for(let j = topLeftSquare.col; j <= bottomRightSquare.col; j++) {
-                                occupied.push( i + "," + j );
-                            }
-                        }
-
-                        if(this.nextSegment != null) {     
-                            // merge this occupied with later segments
-                            occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
-                        }
-                    }
-                    return occupied;
-                }
-                this.rectangle = function() {
-                    if(this.rect == null)
-                        this.update(snake.length);
-                    return this.rect;
-                }
-                this.update = function(length) {
-                    let segmentLength = length;
-                    if(this.nextSegment != null) {
-                        switch (direction) {
-                            case DIRECTION.UP:
-                                segmentLength = Math.min(length, this.nextSegment.start.y - this.start.y);
-                                break;
-                            case DIRECTION.DOWN:
-                                segmentLength = Math.min(length, this.start.y - this.nextSegment.start.y);
-                                break;
-                            case DIRECTION.LEFT:
-                                segmentLength = Math.min(length, this.nextSegment.start.x - this.start.x);
-                                break;
-                            case DIRECTION.RIGHT:   
-                                segmentLength = Math.min(length, this.start.x - this.nextSegment.start.x);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                    let quarterSize = this.size/4               
-                    switch (this.direction) {
-                        case DIRECTION.UP:
-                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y, this.size/2, segmentLength);
-                            break;
-                        case DIRECTION.DOWN:
-                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y - segmentLength, this.size/2, segmentLength);
-                            break;
-                        case DIRECTION.LEFT:
-                            this.rect = new Rectangle(this.start.x , this.start.y - quarterSize, segmentLength, this.size/2);
-                            break;
-                        case DIRECTION.RIGHT:   
-                            this.rect = new Rectangle(this.start.x - segmentLength, this.start.y - quarterSize, segmentLength, this.size/2);
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if (this.nextSegment != null) {
-                        let remainingLength = length - segmentLength;
-                        if(remainingLength <= 0) {
-                            // The segment has moved past the next segment so delete it.
-                            this.nextSegment = null;
-                        }
-                        else {
-                            this.nextSegment.update(remainingLength);
-                        }                       
-                    }
-
-                }
-            }
+            
         
             
 
