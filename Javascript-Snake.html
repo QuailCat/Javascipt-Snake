@@ -828,6 +828,40 @@
                     this.running = false;
                     this.food = new Food(FOOD_START_X, FOOD_START_Y);
                     this.snake = null;
+
+                    // listen for key presses
+                    document.addEventListener('keydown', function(e) {
+                        var code = e.which || e.keyCode;
+                        if(snakeGame.running == false) {
+                            return;
+                        }
+
+                        if(snake.enabled == false) {
+                            snake.enabled = true;
+                            snake.setDirection(snake.direction);
+                        }
+                            
+                        if (code == '38' || code == '87') {
+                            // Up or W
+                            snake.setNextDirection(DIRECTION.UP);
+                        }
+                        else if (code == '40' || code == '83') {
+                            // Down or S
+                            snake.setNextDirection(DIRECTION.DOWN);
+                        }
+                        else if (code == '37' || code == '65') {
+                            // Left or A
+                            snake.setNextDirection(DIRECTION.LEFT);
+                        }
+                        else if (code == '39' || code == '68') {
+                            // Right or D
+                            snake.setNextDirection(DIRECTION.RIGHT);
+                        }
+                        else if (code == '27') {
+                            // Esc
+                            snakeGame.showMenu();       
+                        }              
+                    });
                 }
                 pause() {
                     this.running = false;
@@ -865,39 +899,6 @@
 
             var snakeGame = new SnakeGame();
             var modal = document.getElementById("menuModal");
-
-            document.addEventListener('keydown', function(e) {
-                var code = e.which || e.keyCode;
-                if(snakeGame.running == false) {
-                    return;
-                }
-
-                if(snake.enabled == false) {
-                    snake.enabled = true;
-                    snake.setDirection(snake.direction);
-                }
-                    
-                if (code == '38' || code == '87') {
-                    // Up or W
-                    snake.setNextDirection(DIRECTION.UP);
-                }
-                else if (code == '40' || code == '83') {
-                    // Down or S
-                    snake.setNextDirection(DIRECTION.DOWN);
-                }
-                else if (code == '37' || code == '65') {
-                    // Left or A
-                    snake.setNextDirection(DIRECTION.LEFT);
-                }
-                else if (code == '39' || code == '68') {
-                    // Right or D
-                    snake.setNextDirection(DIRECTION.RIGHT);
-                }
-                else if (code == '27') {
-                    // Esc
-                    snakeGame.showMenu();       
-                }              
-            });
 
             var count = 0;
             function draw() {
