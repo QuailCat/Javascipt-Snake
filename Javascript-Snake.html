@@ -302,6 +302,9 @@
                     this.eyes.left.draw(context);
                     this.eyes.right.draw(context);
                 }
+                this.getHitBox = function() {
+                    return new Rectangle(this.center.x - 1, this.center.y -1, 1, 1 );
+                }
                 this.setDirection = function(direction) {
                     if(this.direction == direction) {
                         return;
@@ -467,13 +470,13 @@
                         y : this.head.center.y + halfSize
                     }
                     
-                    // treat snake head as rectangle
-                    var snakeHeadRect = new Rectangle(topLeft.x, topLeft.y, this.size, this.size);
+                    // Get snake head hitbox
+                    var snakeHeadHitBox = this.head.getHitBox();
 
                     let foodRect = grub.rectangle();
 
                     var context = canvas.getContext("2d");
-                    if(snakeHeadRect.checkCollision(foodRect)) {
+                    if(snakeHeadHitBox.checkCollision(foodRect)) {
                         // eat and grow
                         this.length += SNAKE_GROWTH_RATE;
                         scoreBoard.addToScore(POINTS_PER_FOOD);
@@ -496,7 +499,7 @@
                         while (segment.nextSegment != null) {
                             segment = segment.nextSegment;
                             let segmentRect = segment.rect;
-                            if(segmentRect != null && snakeHeadRect.checkCollision(segmentRect)) {
+                            if(segmentRect != null && snakeHeadHitBox.checkCollision(segmentRect)) {
                                 // collision!
                                 this.dx = 0;
                                 this.dy = 0;
@@ -952,8 +955,9 @@
 
                 snake.move();
 
-                snake.draw();
                 grub.draw();
+                snake.draw();
+                
                 scoreBoard.draw();
 
                 snake.checkCollision(snakeGame.showMenu);
