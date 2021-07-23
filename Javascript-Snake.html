@@ -126,7 +126,8 @@
                     context.closePath();
                 },
                 prepare : function(centerX, centerY, size, direction, context) {
-                    var halfSize = size/2;
+                    let halfSize = size/2;
+                    let quarterSize = size/4;
 
                     switch (direction) {
                         case DIRECTION.UP:
@@ -270,12 +271,15 @@
 
                     context.closePath();
                 }
-                this.setLocation = function(x, y) {
-                    this.center = { x , y };
+                this.move = function(dx, dy) {
+                    this.setCenter(this.center.x + dx, this.center.y + dy);
+                }
+                this.setCenter = function(x, y) {
+                    this.center = { x : x , y : y };
                 }
                 this.setTarget = function(x, y) {
                     // The location the eye is looking at
-                    this.target = { x, y };
+                    this.target = { x : x, y : y };
                 }
 
             }
@@ -283,12 +287,15 @@
             function SnakeHead() {
                 this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
                 this.size = SNAKE_SIZE;
-                this.direction = SNAKE_START_DIRECTION;
-                this.eyes = { right : new SnakeEye(this.size/5), left : new SnakeEye(this.size/5) }; 
+                this.distanceBetweenEyes = this.size/4;
+                
+                this.eyes = { 
+                    right : new SnakeEye(this.size/6), 
+                    left : new SnakeEye(this.size/6) 
+                }; 
                 this.draw = function() {
                     Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
-                    this.eyes.left.setLocation(this.center.x - 6, this.center.y);
-                    this.eyes.right.setLocation(this.center.x + 6, this.center.y);
+                    
 
                     var canvas = document.getElementById("SnakeCanvas");
                     var context = canvas.getContext("2d");
@@ -300,10 +307,38 @@
                         return;
                     }
 
+                    switch(direction) {
+                        case DIRECTION.UP:
+                            this.eyes.left.setCenter(this.center.x - this.distanceBetweenEyes, this.center.y);
+                            this.eyes.right.setCenter(this.center.x + this.distanceBetweenEyes, this.center.y); 
+                            break;
+                        case DIRECTION.DOWN:
+                            this.eyes.left.setCenter(this.center.x + this.distanceBetweenEyes, this.center.y);
+                            this.eyes.right.setCenter(this.center.x - this.distanceBetweenEyes, this.center.y); 
+                            break;
+                        case DIRECTION.LEFT:
+                            this.eyes.left.setCenter(this.center.x, this.center.y + this.distanceBetweenEyes);
+                            this.eyes.right.setCenter(this.center.x, this.center.y - this.distanceBetweenEyes);
+                            break;
+                        case DIRECTION.RIGHT:
+                            this.eyes.left.setCenter(this.center.x, this.center.y - this.distanceBetweenEyes);
+                            this.eyes.right.setCenter(this.center.x, this.center.y + this.distanceBetweenEyes);
+                            break;
+                        default:
+                            break;
+                    }
+
                     this.direction = direction;
                 }
+                this.setDirection(SNAKE_START_DIRECTION);
                 this.setCenter = function(x, y) {
-                    this.center = { x , y };
+                    let dx =  x - this.center.x;
+                    let dy = y - this.center.y;
+
+                    this.center = { x : x , y : y };
+                    
+                    this.eyes.left.move( dx, dy );
+                    this.eyes.right.move( dx, dy );
                 }
             }
 
@@ -544,8 +579,8 @@
                         return;
                     }
 
-                    let nextX = this.head.center.x += this.dx;
-                    let nextY = this.head.center.y += this.dy;
+                    let nextX = this.head.center.x + this.dx;
+                    let nextY = this.head.center.y + this.dy;
 
 
                     if (this.nextDirection == null || this.direction == this.nextDirection) {
