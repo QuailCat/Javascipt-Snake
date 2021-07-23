@@ -430,13 +430,15 @@
                 }
             }
 
-            const grid = {
-                squareSize : GRID_SQUARE_SIZE,
-                rows : GRID_ROWS,
-                columns : GRID_COLUMNS,
-                getSquare : function (x, y) {
-                    col = Math.floor(x/this.squareSize);
-                    row = Math.floor(y/this.squareSize);
+            class Grid {
+                constructor() {
+                    this.squareSize = GRID_SQUARE_SIZE;
+                    this.rows = GRID_ROWS;
+                    this.columns = GRID_COLUMNS;
+                }        
+                getSquare(x, y) {
+                    let col = Math.floor(x/this.squareSize);
+                    let row = Math.floor(y/this.squareSize);
                     return { 
                         "row" : row, 
                         "col" : col, 
@@ -445,8 +447,8 @@
                             "y" : row * this.squareSize + this.squareSize/2
                         } 
                     };
-                },
-                draw : function(context) {
+                }
+                draw(context) {
                     let saveFillStyle = context.fillStyle;
 
                     context.beginPath();
@@ -479,8 +481,8 @@
                     context.closePath();
                     context.fillStyle = saveFillStyle;
                     return;
-                },
-                spawnFood : function (occupied) {
+                }
+                spawnFood(occupied) {
                     // Get the array of unoccupied squares
                     let unoccupiedSquares = [];
                     for(let i = 0; i < this.rows; i++) {
@@ -502,6 +504,7 @@
                     grub = new Food(x, y);
                 }
             }
+            const grid = new Grid();
 
             
             class Rectangle {
