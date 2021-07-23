@@ -255,16 +255,19 @@
                 }
             }
 
-            function SnakeHead() {
-                this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
-                this.size = SNAKE_SIZE;
-                this.distanceBetweenEyes = this.size/4;
-                
-                this.eyes = { 
-                    right : new SnakeEye(this.size/6), 
-                    left : new SnakeEye(this.size/6) 
-                }; 
-                this.draw = function() {
+            class SnakeHead {
+                constructor() {
+                    this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
+                    this.size = SNAKE_SIZE;
+                    this.distanceBetweenEyes = this.size/4;
+                    
+                    this.eyes = { 
+                        right : new SnakeEye(this.size/6), 
+                        left : new SnakeEye(this.size/6) 
+                    }; 
+                    this.setDirection(SNAKE_START_DIRECTION);
+                }
+                draw() {
                     Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
                     
 
@@ -273,10 +276,10 @@
                     this.eyes.left.draw(context);
                     this.eyes.right.draw(context);
                 }
-                this.getHitBox = function() {
+                getHitBox() {
                     return new Rectangle(this.center.x - this.size/4, this.center.y - this.size/4, this.size/4, this.size/4 );
                 }
-                this.setDirection = function(direction) {
+                setDirection(direction) {
                     if(this.direction == direction) {
                         return;
                     }
@@ -304,8 +307,7 @@
 
                     this.direction = direction;
                 }
-                this.setDirection(SNAKE_START_DIRECTION);
-                this.setCenter = function(x, y) {
+                setCenter(x, y) {
                     let dx =  x - this.center.x;
                     let dy = y - this.center.y;
 
