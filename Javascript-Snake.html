@@ -170,7 +170,6 @@
                     );
                 }
             }
-
             var food = new Food(FOOD_START_X, FOOD_START_Y);
 
             class ScoreBoard {
@@ -372,9 +371,7 @@
                     }
                     return occupied;
                 }
-                rectangle() {
-                    if(this.rect == null)
-                        this.update(snake.length);
+                get hitBox() {
                     return this.rect;
                 }
                 update(length) {
@@ -587,7 +584,7 @@
                         let segment = this.nextSegment.nextSegment.nextSegment;
                         while (segment.nextSegment != null) {
                             segment = segment.nextSegment;
-                            let segmentRect = segment.rect;
+                            let segmentRect = segment.hitBox;
                             if(segmentRect != null && snakeHeadHitBox.checkCollision(segmentRect)) {
                                 // collision!
                                 this.dx = 0;
