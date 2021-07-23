@@ -234,6 +234,55 @@
                 }
             }
 
+            function SnakeEye() {
+                this.center = { x : 10, y : 10 };
+                this.target = { x : 10, y : 10 };
+                this.radius = 6;
+                this.pupilRadius = this.radius/2;
+                this.pupilDistance = this.radius - this.pupilRadius;
+                
+                this.draw = function(context) {
+                    // Draw Eyeball
+                    context.beginPath();
+                    context.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
+                    context.fillStyle = "white";
+                    context.fill();
+
+                    context.closePath();
+
+                    // Draw Pupil
+                    context.beginPath();
+                    this.setTarget(grub.center.x, grub.center.y);
+
+                    let vectorLength = Math.sqrt(Math.pow(this.target.x - this.center.x, 2) + Math.pow(this.target.y - this.center.y, 2));
+                    let v = { x : this.target.x - this.center.x, y : this.target.y - this.center.y }
+                    let u = { x : v.x/vectorLength, y : v.y/vectorLength };
+
+                    console.log(this.target.x);
+                    context.arc(
+                        this.center.x + u.x * this.pupilDistance, 
+                        this.center.y + u.y * this.pupilDistance, 
+                        this.pupilRadius, 
+                        0, 
+                        2 * Math.PI
+                    );
+                    context.fillStyle = "black";
+                    context.fill();
+
+                    context.closePath();
+                }
+                this.setLocation = function(x, y) {
+                    this.center.x = x;
+                    this.center.y = y;
+                }
+                this.setTarget = function(x, y) {
+                    // The location the eye is looking at
+                    this.target.x = x;
+                    this.target.y = y;
+                }
+
+            }
+
             const grid = {
                 squareSize : GRID_SQUARE_SIZE,
                 rows : GRID_ROWS,
@@ -826,6 +875,7 @@
                     
             });
 
+            var eye = new SnakeEye();
             var count = 0;
             function draw() {
                 var canvas = document.getElementById("SnakeCanvas");
@@ -841,7 +891,7 @@
                 snake.draw();
                 grub.draw();
                 scoreBoard.draw();
-
+                eye.draw(context);
                 snake.checkCollision(snakeGame.showMenu);
                 
             }
