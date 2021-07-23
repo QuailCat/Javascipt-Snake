@@ -174,6 +174,7 @@
             const scoreBoard = {
                 score : 0,
                 highScore : 0,
+
                 addToScore : function(points) {
                     this.score += points;
                     this.highScore = Math.max(this.highScore, this.score);
@@ -205,14 +206,15 @@
                 }
             }
 
-            function SnakeEye(radius) {
-                this.center;
-                this.target;
-                this.radius = radius;
-                this.pupilRadius = this.radius/2;
-                this.pupilDistance = this.radius - this.pupilRadius;
-                
-                this.draw = function(context) {
+            class SnakeEye {
+                constructor(radius) {
+                    this.center;
+                    this.target;
+                    this.radius = radius;
+                    this.pupilRadius = this.radius/2;
+                    this.pupilDistance = this.radius - this.pupilRadius;
+                }
+                draw(context) {
                     // Draw Eyeball
                     context.beginPath();
                     context.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
@@ -241,17 +243,16 @@
 
                     context.closePath();
                 }
-                this.move = function(dx, dy) {
+                move(dx, dy) {
                     this.setCenter(this.center.x + dx, this.center.y + dy);
                 }
-                this.setCenter = function(x, y) {
+                setCenter(x, y) {
                     this.center = { x : x , y : y };
                 }
-                this.setTarget = function(x, y) {
+                setTarget(x, y) {
                     // The location the eye is looking at
                     this.target = { x : x, y : y };
                 }
-
             }
 
             function SnakeHead() {
@@ -862,20 +863,6 @@
 
             var snakeGame = new SnakeGame();
             var modal = document.getElementById("menuModal");
-            
-            
-            // Get the <span> element that closes the modal
-            /*var span = document.getElementsByClassName("close")[0];
-            span.onclick = function() {
-                modal.style.display = "none";
-                snakeGame.start();
-            }*/
-
-            /* window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            } */
 
             document.addEventListener('keydown', function(e) {
                 var code = e.which || e.keyCode;
@@ -906,11 +893,8 @@
                 }
                 else if (code == '27') {
                     // Esc
-                    snakeGame.showMenu();
-                    
-                }
-                   
-                    
+                    snakeGame.showMenu();       
+                }              
             });
 
             var count = 0;
