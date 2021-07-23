@@ -189,7 +189,7 @@
 
                     context.closePath();
                 }
-                this.rectangle = function() {
+                this.getHitBox = function() {
                     return new Rectangle(
                         this.center.x - this.size/2, 
                         this.center.y - this.size/2, 
@@ -473,7 +473,7 @@
                     // Get snake head hitbox
                     var snakeHeadHitBox = this.head.getHitBox();
 
-                    let foodRect = grub.rectangle();
+                    let foodRect = grub.getHitBox();
 
                     var context = canvas.getContext("2d");
                     if(snakeHeadHitBox.checkCollision(foodRect)) {
