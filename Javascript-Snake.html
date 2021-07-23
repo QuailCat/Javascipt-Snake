@@ -5,65 +5,7 @@
             Javascript-Snake
         </title>
     </head>
-    <style>
-        canvas {
-            padding-left: 0;
-            padding-right: 0;
-            margin-left: auto;
-            margin-right: auto;
-            display: block;
-            width: 480px;
-        }
-
-         /* The Modal (background) */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgb(0,0,0); /* Fallback color */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-        }
-
-        /* Modal Content/Box */
-        .modal-content {
-            border-radius: 10px;
-            background-color: #fefefe;
-            margin:25% auto; /* 15% from the top and centered */
-            padding: 20px;
-            border: 1px solid #888;
-            width: fit-content;
-        }
-
-        .center {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .button {
-            background-color: #4CAF50; /* Green */
-            border: none;
-            border-radius: 10px;
-            color: white;
-            padding: 15px;
-            margin: 0 auto;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-    </style>
+    <link rel="stylesheet" href="styles/snakeStyle.css">
     <body>
         <div class="hidden">
             <img id="apple" width="32" height="32" src="images/apple.png" alt="apple" />
@@ -136,6 +78,12 @@
             const FOOD_START_X = Math.ceil(GRID_COLUMNS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
             const FOOD_START_Y = Math.ceil(GRID_ROWS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
 
+            const SNAKE_CANVAS = document.getElementById("SnakeCanvas");
+            const SNAKE_CTX = SNAKE_CANVAS.getContext("2d");
+
+            const SNAKE_SCOREBOARD = document.getElementById("SnakeScoreboard");
+            const SCOREBOARD_CTX = SnakeScoreboard.getContext("2d");
+
             const Triangle = {
                 fill : function(centerX, centerY, size, direction) {
                     var canvas = document.getElementById("SnakeCanvas");
@@ -192,32 +140,32 @@
                 }
             }
 
-            function Food(centerX, centerY) {
-                this.center = { x : centerX, y : centerY },
-                this.size = SNAKE_SIZE,
+            class Food {
+                constructor(centerX, centerY){
+                    this.center = { x : centerX, y : centerY };
+                    this.size = SNAKE_SIZE;
 
-                // set random fruit image
-                this.img = Fruit_Images.length > 0 ? Fruit_Images[Math.floor(Math.random() * Fruit_Images.length)] : null;
-                this.draw = function() {
-                    var canvas = document.getElementById("SnakeCanvas");
-                    var context = canvas.getContext("2d");
-                    context.beginPath();
+                    // set random fruit image
+                    this.img = Fruit_Images.length > 0 ? Fruit_Images[Math.floor(Math.random() * Fruit_Images.length)] : null;
+                }
+                draw() {
+                    SNAKE_CTX.beginPath();
 
                     if(this.img != null) {
-                        context.drawImage(this.img, this.center.x - this.img.width/2, this.center.y - this.img.width/2);
+                        SNAKE_CTX.drawImage(this.img, this.center.x - this.img.width/2, this.center.y - this.img.width/2);
                     }
                     else {
                         // fallback if no image available
-                        context.arc(this.center.x, this.center.y, this.size/2, 0, 2 * Math.PI);
-                        context.fillStyle = "yellow";
-                        context.strokeStyle = "black";
-                        context.fill();
-                        context.stroke();
+                        SNAKE_CTX.arc(this.center.x, this.center.y, this.size/2, 0, 2 * Math.PI);
+                        SNAKE_CTX.fillStyle = "yellow";
+                        SNAKE_CTX.strokeStyle = "black";
+                        SNAKE_CTX.fill();
+                        SNAKE_CTX.stroke();
                     }     
 
-                    context.closePath();
+                    SNAKE_CTX.closePath();
                 }
-                this.rectangle = function() {
+                get hitBox() {
                     return new Rectangle(
                         this.center.x - this.size/2, 
                         this.center.y - this.size/2, 
@@ -226,114 +174,112 @@
                     );
                 }
             }
+            var food = new Food(FOOD_START_X, FOOD_START_Y);
 
-            var grub = new Food(FOOD_START_X, FOOD_START_Y);
-
-            const scoreBoard = {
-                score : 0,
-                highScore : 0,
-                addToScore : function(points) {
+            class ScoreBoard {
+                constructor() {
+                    this.score = 0;
+                    this.highScore = 0;
+                }
+                addToScore(points) {
                     this.score += points;
                     this.highScore = Math.max(this.highScore, this.score);
-                },
-                draw : function() {
-                    let canvas = document.getElementById("SnakeScoreboard");
-                    let ctx = canvas.getContext('2d');
-                    ctx.beginPath();
+                }
+                draw() {
+                    SCOREBOARD_CTX.beginPath();
 
-                    ctx.rect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = "green";
-                    ctx.fill();
+                    SCOREBOARD_CTX.rect(0, 0, SNAKE_SCOREBOARD.width, SNAKE_SCOREBOARD.height);
+                    SCOREBOARD_CTX.fillStyle = "green";
+                    SCOREBOARD_CTX.fill();
                     
-                    ctx.closePath();
+                    SCOREBOARD_CTX.closePath();
 
-
-
-                    ctx.font = "20px arial";
-                    ctx.fillStyle = "black";
+                    SCOREBOARD_CTX.font = "20px arial";
+                    SCOREBOARD_CTX.fillStyle = "black";
 
                     // current score
-                    ctx.fillText('Score: ' + this.score, 60, 50);
+                    SCOREBOARD_CTX.fillText('Score: ' + this.score, 60, 50);
 
                     // high score
-                    ctx.fillText('High Score: ' + this.highScore, 300, 50);
-                },
-                reset : function() {
+                    SCOREBOARD_CTX.fillText('High Score: ' + this.highScore, 300, 50);
+                }
+                reset() {
                     this.score = 0;
                 }
             }
+            const scoreBoard = new ScoreBoard();
 
-            function SnakeEye(radius) {
-                this.center;
-                this.target;
-                this.radius = radius;
-                this.pupilRadius = this.radius/2;
-                this.pupilDistance = this.radius - this.pupilRadius;
-                
-                this.draw = function(context) {
+            class SnakeEye {
+                constructor(radius) {
+                    this.center;
+                    this.target;
+                    this.radius = radius;
+                    this.pupilRadius = this.radius/2;
+                    this.pupilDistance = this.radius - this.pupilRadius;
+                }
+                draw() {
                     // Draw Eyeball
-                    context.beginPath();
-                    context.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
-                    context.fillStyle = "white";
-                    context.fill();
+                    SNAKE_CTX.beginPath();
+                    SNAKE_CTX.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
+                    SNAKE_CTX.fillStyle = "white";
+                    SNAKE_CTX.fill();
 
-                    context.closePath();
+                    SNAKE_CTX.closePath();
 
                     // Draw Pupil
-                    context.beginPath();
-                    this.setTarget(grub.center.x, grub.center.y);
+                    SNAKE_CTX.beginPath();
+                    this.setTarget(food.center.x, food.center.y);
 
                     let vectorLength = Math.sqrt(Math.pow(this.target.x - this.center.x, 2) + Math.pow(this.target.y - this.center.y, 2));
                     let v = { x : this.target.x - this.center.x, y : this.target.y - this.center.y }
                     let u = { x : v.x/vectorLength, y : v.y/vectorLength };
 
-                    context.arc(
+                    SNAKE_CTX.arc(
                         this.center.x + u.x * this.pupilDistance, 
                         this.center.y + u.y * this.pupilDistance, 
                         this.pupilRadius, 
                         0, 
                         2 * Math.PI
                     );
-                    context.fillStyle = "black";
-                    context.fill();
+                    SNAKE_CTX.fillStyle = "black";
+                    SNAKE_CTX.fill();
 
-                    context.closePath();
+                    SNAKE_CTX.closePath();
                 }
-                this.move = function(dx, dy) {
+                move(dx, dy) {
                     this.setCenter(this.center.x + dx, this.center.y + dy);
                 }
-                this.setCenter = function(x, y) {
+                setCenter(x, y) {
                     this.center = { x : x , y : y };
                 }
-                this.setTarget = function(x, y) {
+                setTarget(x, y) {
                     // The location the eye is looking at
                     this.target = { x : x, y : y };
                 }
-
             }
 
-            function SnakeHead() {
-                this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
-                this.size = SNAKE_SIZE;
-                this.distanceBetweenEyes = this.size/4;
-                
-                this.eyes = { 
-                    right : new SnakeEye(this.size/6), 
-                    left : new SnakeEye(this.size/6) 
-                }; 
-                this.draw = function() {
+            class SnakeHead {
+                constructor() {
+                    this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
+                    this.size = SNAKE_SIZE;
+                    this.distanceBetweenEyes = this.size/4;
+                    
+                    this.eyes = { 
+                        right : new SnakeEye(this.size/6), 
+                        left : new SnakeEye(this.size/6) 
+                    }; 
+                    this.setDirection(SNAKE_START_DIRECTION);
+                }
+                draw() {
                     Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
                     
-
-                    var canvas = document.getElementById("SnakeCanvas");
-                    var context = canvas.getContext("2d");
-                    this.eyes.left.draw(context);
-                    this.eyes.right.draw(context);
+                    this.eyes.left.draw();
+                    this.eyes.right.draw();
                 }
-                this.getHitBox = function() {
+                get hitBox() {
                     return new Rectangle(this.center.x - this.size/4, this.center.y - this.size/4, this.size/4, this.size/4 );
                 }
-                this.setDirection = function(direction) {
+                setDirection(direction) {
                     if(this.direction == direction) {
                         return;
                     }
@@ -361,8 +307,7 @@
 
                     this.direction = direction;
                 }
-                this.setDirection(SNAKE_START_DIRECTION);
-                this.setCenter = function(x, y) {
+                setCenter(x, y) {
                     let dx =  x - this.center.x;
                     let dy = y - this.center.y;
 
@@ -373,13 +318,118 @@
                 }
             }
 
-            const grid = {
-                squareSize : GRID_SQUARE_SIZE,
-                rows : GRID_ROWS,
-                columns : GRID_COLUMNS,
-                getSquare : function (x, y) {
-                    col = Math.floor(x/this.squareSize);
-                    row = Math.floor(y/this.squareSize);
+            class SnakeSegment {
+                constructor(direction, nextSegment, startX, startY){
+                    this.start = { x : startX, y : startY };
+                    this.direction = direction;
+                    this.nextSegment = nextSegment;
+                    this.size = SNAKE_SIZE;
+                    this.rect = null;
+                }  
+                draw() {
+                    SNAKE_CTX.beginPath();
+
+                    SNAKE_CTX.rect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+                    
+                    let saveFillStyle = SNAKE_CTX.fillStyle;
+                    SNAKE_CTX.fillStyle = "blue";
+                    SNAKE_CTX.strokeStyle = "black";
+                    SNAKE_CTX.fill();
+
+                    SNAKE_CTX.fillStyle = saveFillStyle;
+
+                    SNAKE_CTX.closePath();
+
+                    if (this.nextSegment != null) {
+                        this.nextSegment.draw();                   
+                    }
+                }
+                getOccupied() {
+                    let occupied = [];
+
+                    if(this.rect != null) {
+                        // calculate the square that contains the top left and bottom right points.
+                        let topLeftSquare = grid.getSquare(this.rect.x, this.rect.y);
+                        let bottomRightSquare = grid.getSquare(this.rect.x + this.rect.width, this.rect.y + this.rect.height);
+                        
+                        for(let i = topLeftSquare.row; i <= bottomRightSquare.row; i++) {
+                            for(let j = topLeftSquare.col; j <= bottomRightSquare.col; j++) {
+                                occupied.push( i + "," + j );
+                            }
+                        }
+
+                        if(this.nextSegment != null) {     
+                            // merge this occupied with later segments
+                            occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
+                        }
+                    }
+                    return occupied;
+                }
+                get hitBox() {
+                    return this.rect;
+                }
+                update(length) {
+                    let segmentLength = length;
+                    if(this.nextSegment != null) {
+                        switch (this.direction) {
+                            case DIRECTION.UP:
+                                segmentLength = Math.min(length, this.nextSegment.start.y - this.start.y);
+                                break;
+                            case DIRECTION.DOWN:
+                                segmentLength = Math.min(length, this.start.y - this.nextSegment.start.y);
+                                break;
+                            case DIRECTION.LEFT:
+                                segmentLength = Math.min(length, this.nextSegment.start.x - this.start.x);
+                                break;
+                            case DIRECTION.RIGHT:   
+                                segmentLength = Math.min(length, this.start.x - this.nextSegment.start.x);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    let quarterSize = this.size/4               
+                    switch (this.direction) {
+                        case DIRECTION.UP:
+                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y, this.size/2, segmentLength);
+                            break;
+                        case DIRECTION.DOWN:
+                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y - segmentLength, this.size/2, segmentLength);
+                            break;
+                        case DIRECTION.LEFT:
+                            this.rect = new Rectangle(this.start.x , this.start.y - quarterSize, segmentLength, this.size/2);
+                            break;
+                        case DIRECTION.RIGHT:   
+                            this.rect = new Rectangle(this.start.x - segmentLength, this.start.y - quarterSize, segmentLength, this.size/2);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (this.nextSegment != null) {
+                        let remainingLength = length - segmentLength;
+                        if(remainingLength <= 0) {
+                            // The segment has moved past the next segment so delete it.
+                            this.nextSegment = null;
+                        }
+                        else {
+                            this.nextSegment.update(remainingLength);
+                        }                       
+                    }
+
+                }
+            }
+
+            class Grid {
+                constructor() {
+                    this.squareSize = GRID_SQUARE_SIZE;
+                    this.rows = GRID_ROWS;
+                    this.columns = GRID_COLUMNS;
+                }        
+                getSquare(x, y) {
+                    let col = Math.floor(x/this.squareSize);
+                    let row = Math.floor(y/this.squareSize);
                     return { 
                         "row" : row, 
                         "col" : col, 
@@ -388,42 +438,42 @@
                             "y" : row * this.squareSize + this.squareSize/2
                         } 
                     };
-                },
-                draw : function(context) {
-                    let saveFillStyle = context.fillStyle;
+                }
+                draw() {
+                    let saveFillStyle = SNAKE_CTX.fillStyle;
 
-                    context.beginPath();
+                    SNAKE_CTX.beginPath();
 
                     // Draw background color
-                    context.fillStyle = "#996633";
-                    context.rect(0, 0, this.columns * this.squareSize, this.rows * this.squareSize);
-                    context.fill();
+                    SNAKE_CTX.fillStyle = "#996633";
+                    SNAKE_CTX.rect(0, 0, this.columns * this.squareSize, this.rows * this.squareSize);
+                    SNAKE_CTX.fill();
 
-                    context.closePath();
+                    SNAKE_CTX.closePath();
 
                     // Draw Grid
                     
-                    context.fillStyle = "#999966";
+                    SNAKE_CTX.fillStyle = "#999966";
                     for (let col = 0; col < this.columns; col++) {
                         for (let row = 0; row < this.rows; row++) {
                             if((col + row) % 2 == 0) {
-                                context.beginPath();
-                                context.rect(col * this.squareSize, 
+                                SNAKE_CTX.beginPath();
+                                SNAKE_CTX.rect(col * this.squareSize, 
                                     row * this.squareSize, 
                                     this.squareSize, 
                                     this.squareSize);
-                                context.fill();
-                                context.closePath();
+                                    SNAKE_CTX.fill();
+                                    SNAKE_CTX.closePath();
                             } 
                         }
                     }
 
                     
-                    context.closePath();
-                    context.fillStyle = saveFillStyle;
+                    SNAKE_CTX.closePath();
+                    SNAKE_CTX.fillStyle = saveFillStyle;
                     return;
-                },
-                spawnFood : function (occupied) {
+                }
+                spawnFood(occupied) {
                     // Get the array of unoccupied squares
                     let unoccupiedSquares = [];
                     for(let i = 0; i < this.rows; i++) {
@@ -442,17 +492,20 @@
                     let x = randomSquare.col * this.squareSize + this.squareSize/2;
                     let y = randomSquare.row * this.squareSize + this.squareSize/2;
                     
-                    grub = new Food(x, y);
+                    food = new Food(x, y);
                 }
             }
+            const grid = new Grid();
 
             
-            function Rectangle(x, y, width, height) {
-                this.x = x,
-                this.y = y,
-                this.width = width,
-                this.height = height,
-                this.checkCollision = function(rectangle) {
+            class Rectangle {
+                constructor(x, y, width, height) {
+                    this.x = x;
+                    this.y = y;
+                    this.width = width;
+                    this.height = height;
+                }
+                checkCollision(rectangle) {
                     // check if the argument is a Rectangle
                     if( !(rectangle instanceof Rectangle)) {
                         throw "Invalid Argument";
@@ -470,23 +523,24 @@
                         // no collision
                         return false;
                     }
-
                 }
             }
 
-            function Snake() {
-                this.enabled = false;
-                this.dx = 0;
-                this.dy = 0;
-                this.size = SNAKE_SIZE;
-                this.direction = SNAKE_START_DIRECTION;
-                this.nextDirection = null;
-                this.speed = SNAKE_SPEED;
-                this.length = SNAKE_START_LENGTH;
-                this.lastTurnSquare = null;
-                this.nextSegment = new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y);
-                this.head = new SnakeHead();
-                this.checkCollision = function(collisionCallBack) {
+            class Snake {
+                constructor(){
+                    this.enabled = false;
+                    this.dx = 0;
+                    this.dy = 0;
+                    this.size = SNAKE_SIZE;
+                    this.direction = SNAKE_START_DIRECTION;
+                    this.nextDirection = null;
+                    this.speed = SNAKE_SPEED;
+                    this.length = SNAKE_START_LENGTH;
+                    this.lastTurnSquare = null;
+                    this.nextSegment = new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y);
+                    this.head = new SnakeHead();
+                }
+                checkCollision(collisionCallBack) {
                     let canvas = document.getElementById("SnakeCanvas");
                     let halfSize = this.size/2;
                     let topLeft = { 
@@ -499,11 +553,10 @@
                     }
                     
                     // Get snake head hitbox
-                    var snakeHeadHitBox = this.head.getHitBox();
+                    var snakeHeadHitBox = this.head.hitBox;
 
-                    let foodRect = grub.rectangle();
+                    let foodRect = food.hitBox;
 
-                    var context = canvas.getContext("2d");
                     if(snakeHeadHitBox.checkCollision(foodRect)) {
                         // eat and grow
                         this.length += SNAKE_GROWTH_RATE;
@@ -516,8 +569,6 @@
                         grid.spawnFood(occupied);
                     }
 
-                    
-
                     // check if snake collides with itself
                     if(this.nextSegment != null && 
                         this.nextSegment.nextSegment != null && 
@@ -526,7 +577,7 @@
                         let segment = this.nextSegment.nextSegment.nextSegment;
                         while (segment.nextSegment != null) {
                             segment = segment.nextSegment;
-                            let segmentRect = segment.rect;
+                            let segmentRect = segment.hitBox;
                             if(segmentRect != null && snakeHeadHitBox.checkCollision(segmentRect)) {
                                 // collision!
                                 this.dx = 0;
@@ -539,7 +590,6 @@
 
                         }
                     }
-
 
                     // check if snake head is still on canvas
                     if(topLeft.x < 0) {
@@ -583,18 +633,17 @@
                         }
                     }
                 };
-                this.draw = function() {
+                draw() {
                     
                     if(this.nextSegment != null) {
                         this.nextSegment.update(this.length);
                         this.nextSegment.draw();
                     }
                     this.head.draw();
-
-                    
+     
                     return;
                 };
-                this.getOccupied = function() {
+                getOccupied() {
                     let snakeHeadSquare = grid.getSquare(this.head.center.x, this.head.center.y);
                     let occupied = [];
                     occupied.push( snakeHeadSquare.row + "," + snakeHeadSquare.col );
@@ -605,7 +654,7 @@
                     }
                     return occupied;
                 };
-                this.move = function () {
+                move() {
                     if (this.enabled == false) {
                         return;
                     }
@@ -672,7 +721,7 @@
                         }
                     }
                 };
-                this.setDirection = function(direction) {
+                setDirection(direction) {
                     let oldDirection = this.direction; 
                     
 
@@ -720,7 +769,7 @@
                     }
                     
                 };
-                this.setNextDirection = function(direction) {
+                setNextDirection(direction) {
                     if(this.direction == direction)
                         return;
 
@@ -757,7 +806,7 @@
                             break;
                     }
                 };
-                this.setCenter = function(x, y) {
+                setCenter(x, y) {
                     this.head.setCenter(x, y);
 
                     if(this.nextSegment != null) {
@@ -769,132 +818,57 @@
 
             var snake = new Snake();
 
-            function SnakeSegment(direction, nextSegment, startX, startY) {
-                this.start = { x : startX, y : startY },
-                this.direction = direction;
-                this.nextSegment = nextSegment;
-                this.size = SNAKE_SIZE;
-                this.rect = null;
-                this.draw = function() {
-                    var canvas = document.getElementById("SnakeCanvas");
-                    var context = canvas.getContext("2d");
-                    context.beginPath();
+            class SnakeGame {
+                constructor() {
+                    this.running = false;
+                    this.food = new Food(FOOD_START_X, FOOD_START_Y);
+                    this.snake = null;
 
-                    context.rect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
-                    
-                    let saveFillStyle = context.fillStyle;
-                    context.fillStyle = "blue";
-                    context.strokeStyle = "black";
-                    context.fill();
-                    //context.stroke();
-
-                    context.fillStyle = saveFillStyle;
-
-                    context.closePath();
-
-                    if (this.nextSegment != null) {
-                        this.nextSegment.draw();                   
-                    }
-                }
-                this.getOccupied = function() {
-                    let occupied = [];
-
-                    if(this.rect != null) {
-                        // calculate the square that contains the top left and bottom right points.
-                        let topLeftSquare = grid.getSquare(this.rect.x, this.rect.y);
-                        let bottomRightSquare = grid.getSquare(this.rect.x + this.rect.width, this.rect.y + this.rect.height);
-                        
-                        for(let i = topLeftSquare.row; i <= bottomRightSquare.row; i++) {
-                            for(let j = topLeftSquare.col; j <= bottomRightSquare.col; j++) {
-                                occupied.push( i + "," + j );
-                            }
+                    // listen for key presses
+                    document.addEventListener('keydown', function(e) {
+                        var code = e.which || e.keyCode;
+                        if(snakeGame.running == false) {
+                            return;
                         }
 
-                        if(this.nextSegment != null) {     
-                            // merge this occupied with later segments
-                            occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
+                        if(snake.enabled == false) {
+                            snake.enabled = true;
+                            snake.setDirection(snake.direction);
                         }
-                    }
-                    return occupied;
-                }
-                this.rectangle = function() {
-                    if(this.rect == null)
-                        this.update(snake.length);
-                    return this.rect;
-                }
-                this.update = function(length) {
-                    let segmentLength = length;
-                    if(this.nextSegment != null) {
-                        switch (direction) {
-                            case DIRECTION.UP:
-                                segmentLength = Math.min(length, this.nextSegment.start.y - this.start.y);
-                                break;
-                            case DIRECTION.DOWN:
-                                segmentLength = Math.min(length, this.start.y - this.nextSegment.start.y);
-                                break;
-                            case DIRECTION.LEFT:
-                                segmentLength = Math.min(length, this.nextSegment.start.x - this.start.x);
-                                break;
-                            case DIRECTION.RIGHT:   
-                                segmentLength = Math.min(length, this.start.x - this.nextSegment.start.x);
-                                break;
-                            default:
-                                break;
+                            
+                        if (code == '38' || code == '87') {
+                            // Up or W
+                            snake.setNextDirection(DIRECTION.UP);
                         }
-                    }
-
-                    let quarterSize = this.size/4               
-                    switch (this.direction) {
-                        case DIRECTION.UP:
-                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y, this.size/2, segmentLength);
-                            break;
-                        case DIRECTION.DOWN:
-                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y - segmentLength, this.size/2, segmentLength);
-                            break;
-                        case DIRECTION.LEFT:
-                            this.rect = new Rectangle(this.start.x , this.start.y - quarterSize, segmentLength, this.size/2);
-                            break;
-                        case DIRECTION.RIGHT:   
-                            this.rect = new Rectangle(this.start.x - segmentLength, this.start.y - quarterSize, segmentLength, this.size/2);
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if (this.nextSegment != null) {
-                        let remainingLength = length - segmentLength;
-                        if(remainingLength <= 0) {
-                            // The segment has moved past the next segment so delete it.
-                            this.nextSegment = null;
+                        else if (code == '40' || code == '83') {
+                            // Down or S
+                            snake.setNextDirection(DIRECTION.DOWN);
                         }
-                        else {
-                            this.nextSegment.update(remainingLength);
-                        }                       
-                    }
-
+                        else if (code == '37' || code == '65') {
+                            // Left or A
+                            snake.setNextDirection(DIRECTION.LEFT);
+                        }
+                        else if (code == '39' || code == '68') {
+                            // Right or D
+                            snake.setNextDirection(DIRECTION.RIGHT);
+                        }
+                        else if (code == '27') {
+                            // Esc
+                            snakeGame.showMenu();       
+                        }              
+                    });
                 }
-            }
-        
-            
-
-            function SnakeGame() {
-                this.running = false;
-                this.food = new Food(FOOD_START_X, FOOD_START_Y);
-                this.snake = null;
-                this.init = function() {
-
-                };
-                this.pause = function() {
+                pause() {
                     this.running = false;
 
                     snake.enabled = false;
                 }
-                this.reset = function() {
+                reset() {
                     this.pause();
 
                     // set all values to default
                     snake = new Snake();
-                    grub = new Food(FOOD_START_X, FOOD_START_Y);
+                    food = new Food(FOOD_START_X, FOOD_START_Y);
 
                     // Close menu if it is open
                     let menu = document.getElementById("menuModal");
@@ -904,92 +878,37 @@
 
                     this.start();
                 };
-                this.resume = function() {
+                resume() {
 
                     this.running = true;
                     snake.enabled = true;
                 };
-                this.showMenu = function() {
+                showMenu() {
                     snakeGame.pause();
                     modal.style.display = "block";
                 }
-                this.start = function() {
+                start() {
                     this.running = true;
                 }
             }
 
             var snakeGame = new SnakeGame();
             var modal = document.getElementById("menuModal");
-            
-            
-            // Get the <span> element that closes the modal
-            /*var span = document.getElementsByClassName("close")[0];
-            span.onclick = function() {
-                modal.style.display = "none";
-                snakeGame.start();
-            }*/
-
-            /* window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            } */
-
-            document.addEventListener('keydown', function(e) {
-                var code = e.which || e.keyCode;
-                if(snakeGame.running == false) {
-                    return;
-                }
-
-                if(snake.enabled == false) {
-                    snake.enabled = true;
-                    snake.setDirection(snake.direction);
-                }
-                    
-                if (code == '38' || code == '87') {
-                    // Up or W
-                    snake.setNextDirection(DIRECTION.UP);
-                }
-                else if (code == '40' || code == '83') {
-                    // Down or S
-                    snake.setNextDirection(DIRECTION.DOWN);
-                }
-                else if (code == '37' || code == '65') {
-                    // Left or A
-                    snake.setNextDirection(DIRECTION.LEFT);
-                }
-                else if (code == '39' || code == '68') {
-                    // Right or D
-                    snake.setNextDirection(DIRECTION.RIGHT);
-                }
-                else if (code == '27') {
-                    // Esc
-                    snakeGame.showMenu();
-                    
-                }
-                   
-                    
-            });
 
             var count = 0;
             function draw() {
-                var canvas = document.getElementById("SnakeCanvas");
-                var context = canvas.getContext("2d");
-
-                context.clearRect(0, 0, canvas.width, canvas.height);
-
-                
-                grid.draw(context);
+                SNAKE_CTX.clearRect(0, 0, SNAKE_CANVAS.width, SNAKE_CANVAS.height);
+            
+                grid.draw();
 
                 snake.move();
 
-                grub.draw();
+                food.draw();
                 snake.draw();
                 
                 scoreBoard.draw();
 
-                snake.checkCollision(snakeGame.showMenu);
-                
+                snake.checkCollision(snakeGame.showMenu); 
             }
 
             setInterval(draw, 20);
