@@ -33,7 +33,7 @@
         .modal-content {
             border-radius: 10px;
             background-color: #fefefe;
-            margin:15% auto; /* 15% from the top and centered */
+            margin:25% auto; /* 15% from the top and centered */
             padding: 20px;
             border: 1px solid #888;
             width: fit-content;
@@ -44,21 +44,6 @@
             justify-content: center;
             align-items: center;
         }
-
-        /* The Close Button */
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        } 
 
         .button {
             background-color: #4CAF50; /* Green */
@@ -74,15 +59,31 @@
             cursor: pointer;
         }
 
+        .hidden {
+            display: none;
+        }
 
     </style>
     <body>
+        <div class="hidden">
+            <img id="apple" width="32" height="32" src="images/apple.png" alt="apple" />
+            <img id="blueberry" width="32" height="32" src="images/blueberry.png" alt="blueberry" />
+            <img id="dragonfruit" width="32" height="32" src="images/dragon-fruit.png" alt="dragon-fruit" />
+            <img id="mango" width="32" height="32" src="images/mango.png" alt="mango" />
+            <img id="melon" width="32" height="32" src="images/melon.png" alt="melon" />
+            <img id="peach" width="32" height="32" src="images/peach.png" alt="peach" />
+            <img id="pear" width="32" height="32" src="images/pear.png" alt="pear" />
+            <img id="plum" width="32" height="32" src="images/plum.png" alt="plum" />
+            <img id="strawberry" width="32" height="32" src="images/strawberry.png" alt="strawberry" />
+            <img id="watermelon" width="32" height="32" src="images/watermelon.png" alt="watermelon" />
+        </div>
         <canvas id="SnakeScoreboard" width="480" height="60" style="border:1px solid #000000"></canvas>
         <canvas id="SnakeCanvas" width="480" height="480" style="border:1px solid #000000"></canvas>
+        <div class="center">
+            Icons made by&nbsp<a href="https://www.freepik.com" title="Freepik">Freepik</a>&nbspfrom&nbsp<a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+        </div>
         <div id="menuModal" class="modal">
             <div class="modal-content" onshow="snakeGame.pause()">
-                <!--<span class="close">&times;</span> -->
-                <!-- <p>Some text in the Modal...</p> -->
                 <div class="center">
                     <button class="button"  onclick="snakeGame.reset()">Restart</button>
                 </div>
@@ -90,6 +91,28 @@
             </div>
         </div>
         <script>
+            const FRUIT = [
+                "apple",
+                "blueberry",
+                "dragonfruit",
+                "mango",
+                "melon",
+                "peach",
+                "pear",
+                "plum",
+                "strawberry",
+                "watermelon"
+            ];
+
+            var Fruit_Images = [];
+
+            for (let i = 0; i < FRUIT.length; i++) {
+                let img = document.getElementById(FRUIT[i]);
+                if(img != null){
+                    Fruit_Images.push(img);
+                }
+            }
+
             const DIRECTION = {
                 UP    : "UP",
                 DOWN  : "DOWN",
@@ -97,7 +120,7 @@
                 RIGHT : "RIGHT"
             };
    
-            const POINTS_PER_FOOD = 10;
+            const POINTS_PER_FOOD = 1;
 
             const GRID_COLUMNS = 16;
             const GRID_ROWS = 16;
@@ -126,7 +149,8 @@
                     context.closePath();
                 },
                 prepare : function(centerX, centerY, size, direction, context) {
-                    var halfSize = size/2;
+                    let halfSize = size/2;
+                    let quarterSize = size/4;
 
                     switch (direction) {
                         case DIRECTION.UP:
@@ -172,19 +196,25 @@
             function Food(centerX, centerY) {
                 this.center = { x : centerX, y : centerY },
                 this.size = SNAKE_SIZE,
+
+                // set random fruit image
+                this.img = Fruit_Images.length > 0 ? Fruit_Images[Math.floor(Math.random() * Fruit_Images.length)] : null;
                 this.draw = function() {
                     var canvas = document.getElementById("SnakeCanvas");
                     var context = canvas.getContext("2d");
                     context.beginPath();
 
-                    context.arc(this.center.x, this.center.y, this.size/2, 0, 2 * Math.PI);
-                    let saveFillStyle = context.fillStyle;
-                    context.fillStyle = "yellow";
-                    context.strokeStyle = "black";
-                    context.fill();
-                    context.stroke();
-
-                    context.fillStyle = saveFillStyle;
+                    if(this.img != null) {
+                        context.drawImage(this.img, this.center.x - this.img.width/2, this.center.y - this.img.width/2);
+                    }
+                    else {
+                        // fallback if no image available
+                        context.arc(this.center.x, this.center.y, this.size/2, 0, 2 * Math.PI);
+                        context.fillStyle = "yellow";
+                        context.strokeStyle = "black";
+                        context.fill();
+                        context.stroke();
+                    }     
 
                     context.closePath();
                 }
@@ -231,6 +261,116 @@
                 },
                 reset : function() {
                     this.score = 0;
+                }
+            }
+
+            function SnakeEye(radius) {
+                this.center;
+                this.target;
+                this.radius = radius;
+                this.pupilRadius = this.radius/2;
+                this.pupilDistance = this.radius - this.pupilRadius;
+                
+                this.draw = function(context) {
+                    // Draw Eyeball
+                    context.beginPath();
+                    context.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
+                    context.fillStyle = "white";
+                    context.fill();
+
+                    context.closePath();
+
+                    // Draw Pupil
+                    context.beginPath();
+                    this.setTarget(grub.center.x, grub.center.y);
+
+                    let vectorLength = Math.sqrt(Math.pow(this.target.x - this.center.x, 2) + Math.pow(this.target.y - this.center.y, 2));
+                    let v = { x : this.target.x - this.center.x, y : this.target.y - this.center.y }
+                    let u = { x : v.x/vectorLength, y : v.y/vectorLength };
+
+                    context.arc(
+                        this.center.x + u.x * this.pupilDistance, 
+                        this.center.y + u.y * this.pupilDistance, 
+                        this.pupilRadius, 
+                        0, 
+                        2 * Math.PI
+                    );
+                    context.fillStyle = "black";
+                    context.fill();
+
+                    context.closePath();
+                }
+                this.move = function(dx, dy) {
+                    this.setCenter(this.center.x + dx, this.center.y + dy);
+                }
+                this.setCenter = function(x, y) {
+                    this.center = { x : x , y : y };
+                }
+                this.setTarget = function(x, y) {
+                    // The location the eye is looking at
+                    this.target = { x : x, y : y };
+                }
+
+            }
+
+            function SnakeHead() {
+                this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
+                this.size = SNAKE_SIZE;
+                this.distanceBetweenEyes = this.size/4;
+                
+                this.eyes = { 
+                    right : new SnakeEye(this.size/6), 
+                    left : new SnakeEye(this.size/6) 
+                }; 
+                this.draw = function() {
+                    Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
+                    
+
+                    var canvas = document.getElementById("SnakeCanvas");
+                    var context = canvas.getContext("2d");
+                    this.eyes.left.draw(context);
+                    this.eyes.right.draw(context);
+                }
+                this.getHitBox = function() {
+                    return new Rectangle(this.center.x - this.size/4, this.center.y - this.size/4, this.size/4, this.size/4 );
+                }
+                this.setDirection = function(direction) {
+                    if(this.direction == direction) {
+                        return;
+                    }
+
+                    switch(direction) {
+                        case DIRECTION.UP:
+                            this.eyes.left.setCenter(this.center.x - this.distanceBetweenEyes, this.center.y);
+                            this.eyes.right.setCenter(this.center.x + this.distanceBetweenEyes, this.center.y); 
+                            break;
+                        case DIRECTION.DOWN:
+                            this.eyes.left.setCenter(this.center.x + this.distanceBetweenEyes, this.center.y);
+                            this.eyes.right.setCenter(this.center.x - this.distanceBetweenEyes, this.center.y); 
+                            break;
+                        case DIRECTION.LEFT:
+                            this.eyes.left.setCenter(this.center.x, this.center.y + this.distanceBetweenEyes);
+                            this.eyes.right.setCenter(this.center.x, this.center.y - this.distanceBetweenEyes);
+                            break;
+                        case DIRECTION.RIGHT:
+                            this.eyes.left.setCenter(this.center.x, this.center.y - this.distanceBetweenEyes);
+                            this.eyes.right.setCenter(this.center.x, this.center.y + this.distanceBetweenEyes);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    this.direction = direction;
+                }
+                this.setDirection(SNAKE_START_DIRECTION);
+                this.setCenter = function(x, y) {
+                    let dx =  x - this.center.x;
+                    let dy = y - this.center.y;
+
+                    this.center = { x : x , y : y };
+                    
+                    this.eyes.left.move( dx, dy );
+                    this.eyes.right.move( dx, dy );
                 }
             }
 
@@ -337,7 +477,6 @@
 
             function Snake() {
                 this.enabled = false;
-                this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
                 this.dx = 0;
                 this.dy = 0;
                 this.size = SNAKE_SIZE;
@@ -347,25 +486,26 @@
                 this.length = SNAKE_START_LENGTH;
                 this.lastTurnSquare = null;
                 this.nextSegment = new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y);
+                this.head = new SnakeHead();
                 this.checkCollision = function(collisionCallBack) {
                     let canvas = document.getElementById("SnakeCanvas");
                     let halfSize = this.size/2;
                     let topLeft = { 
-                        x : this.center.x - halfSize,
-                        y : this.center.y - halfSize
+                        x : this.head.center.x - halfSize,
+                        y : this.head.center.y - halfSize
                     };
                     let bottomRight = {
-                        x : this.center.x + halfSize,
-                        y : this.center.y + halfSize
+                        x : this.head.center.x + halfSize,
+                        y : this.head.center.y + halfSize
                     }
                     
-                    // treat snake head as rectangle
-                    var snakeHeadRect = new Rectangle(topLeft.x, topLeft.y, this.size, this.size);
+                    // Get snake head hitbox
+                    var snakeHeadHitBox = this.head.getHitBox();
 
                     let foodRect = grub.rectangle();
 
                     var context = canvas.getContext("2d");
-                    if(snakeHeadRect.checkCollision(foodRect)) {
+                    if(snakeHeadHitBox.checkCollision(foodRect)) {
                         // eat and grow
                         this.length += SNAKE_GROWTH_RATE;
                         scoreBoard.addToScore(POINTS_PER_FOOD);
@@ -388,7 +528,7 @@
                         while (segment.nextSegment != null) {
                             segment = segment.nextSegment;
                             let segmentRect = segment.rect;
-                            if(segmentRect != null && snakeHeadRect.checkCollision(segmentRect)) {
+                            if(segmentRect != null && snakeHeadHitBox.checkCollision(segmentRect)) {
                                 // collision!
                                 this.dx = 0;
                                 this.dy = 0;
@@ -407,7 +547,7 @@
                         // Left
                         this.dx = 0;
                         this.dy = 0;
-                        this.center.x = 0 + halfSize;
+                        this.head.center.x = 0 + halfSize;
                         this.enabled = false;
                         if(collisionCallBack != null) {
                             collisionCallBack();
@@ -417,7 +557,7 @@
                         // Top
                         this.dx = 0;
                         this.dy = 0;
-                        this.center.y = 0 + halfSize;
+                        this.head.center.y = 0 + halfSize;
                         this.enabled = false;
                         if(collisionCallBack != null) {
                             collisionCallBack();
@@ -427,7 +567,7 @@
                         // Right
                         this.dx = 0;
                         this.dy = 0;
-                        this.center.x = canvas.width - halfSize;
+                        this.head.center.x = canvas.width - halfSize;
                         this.enabled = false;
                         if(collisionCallBack != null) {
                             collisionCallBack();
@@ -437,7 +577,7 @@
                         // Bottom
                         this.dx = 0;
                         this.dy = 0;
-                        this.center.y = canvas.width - halfSize;
+                        this.head.center.y = canvas.width - halfSize;
                         this.enabled = false;
                         if(collisionCallBack != null) {
                             collisionCallBack();
@@ -450,11 +590,13 @@
                         this.nextSegment.update(this.length);
                         this.nextSegment.draw();
                     }
-                    Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
+                    this.head.draw();
+
+                    
                     return;
                 };
                 this.getOccupied = function() {
-                    let snakeHeadSquare = grid.getSquare(this.center.x, this.center.y);
+                    let snakeHeadSquare = grid.getSquare(this.head.center.x, this.head.center.y);
                     let occupied = [];
                     occupied.push( snakeHeadSquare.row + "," + snakeHeadSquare.col );
 
@@ -469,15 +611,16 @@
                         return;
                     }
 
-                    let nextX = this.center.x += this.dx;
-                    let nextY = this.center.y += this.dy;
+                    let nextX = this.head.center.x + this.dx;
+                    let nextY = this.head.center.y + this.dy;
+
 
                     if (this.nextDirection == null || this.direction == this.nextDirection) {
                         // No change so continue in same direction
                         this.setCenter(nextX, nextY);  
                     }
                     else {
-                        let currentSquare = grid.getSquare(this.center.x, this.center.y);
+                        let currentSquare = grid.getSquare(this.head.center.x, this.head.center.y);
                         
                         if(this.lastTurnSquare != null &&
                             this.lastTurnSquare["center"]["x"] == currentSquare["center"]["x"] &&
@@ -489,8 +632,8 @@
 
                         // Check if the snake head passes through the center of the current square
                         if (this.dx != 0 ) {
-                            if ((this.dx < 0 && nextX <= currentSquare["center"]["x"] < this.center.x) ||
-                                (this.dx > 0 && this.center.x < currentSquare["center"]["x"] <= nextX)) {
+                            if ((this.dx < 0 && nextX <= currentSquare["center"]["x"] < this.head.center.x) ||
+                                (this.dx > 0 && this.head.center.x < currentSquare["center"]["x"] <= nextX)) {
                                 
                                 //let remainingMovement = Math.abs(this.dx) - Math.abs(this.center.x - currentSquare["center"]["x"]);
 
@@ -509,8 +652,8 @@
                             }
                         }
                         else if ( this.dy != 0 ) {
-                            if ((this.dy < 0 && nextY <= currentSquare["center"]["y"] < this.center.y) ||
-                                (this.dy > 0 && this.center.y < currentSquare["center"]["y"] <= nextY)) {
+                            if ((this.dy < 0 && nextY <= currentSquare["center"]["y"] < this.head.center.y) ||
+                                (this.dy > 0 && this.head.center.y < currentSquare["center"]["y"] <= nextY)) {
                                 
                                 //let remainingMovement = Math.abs(this.dy) - Math.abs(this.center.y - currentSquare["center"]["y"]);
 
@@ -540,28 +683,32 @@
                                 break;
                             this.dy = -this.speed;
                             this.dx = 0;
-                            this.direction = direction
+                            this.direction = direction;
+                            this.head.setDirection(direction);
                             break;
                         case DIRECTION.DOWN:
                             if (this.direction == DIRECTION.UP)
                                 break;
                             this.dy = this.speed;
                             this.dx = 0;
-                            this.direction = direction
+                            this.direction = direction;
+                            this.head.setDirection(direction);
                             break;
                         case DIRECTION.LEFT:
                             if (this.direction == DIRECTION.RIGHT)
                                 break;
                             this.dy = 0;
                             this.dx = -this.speed;
-                            this.direction = direction
+                            this.direction = direction;
+                            this.head.setDirection(direction);
                             break;
                         case DIRECTION.RIGHT:
                             if (this.direction == DIRECTION.LEFT)
                                 break;
                             this.dy = 0;
                             this.dx = this.speed;
-                            this.direction = direction
+                            this.direction = direction;
+                            this.head.setDirection(direction);
                             break;
                         default:
                             break;
@@ -569,7 +716,7 @@
 
                     if(this.direction != this.nextSegment.direction) {
                         // don't add a segment if going in the same direction
-                        let newSegment = new SnakeSegment(this.direction, this.nextSegment, this.center.x, this.center.y); 
+                        let newSegment = new SnakeSegment(this.direction, this.nextSegment, this.head.center.x, this.head.center.y); 
                         this.nextSegment = newSegment;
                     }
                     
@@ -612,12 +759,11 @@
                     }
                 };
                 this.setCenter = function(x, y) {
-                    this.center.x = x;
-                    this.center.y = y;
+                    this.head.setCenter(x, y);
 
                     if(this.nextSegment != null) {
-                        this.nextSegment.start.x = this.center.x;
-                        this.nextSegment.start.y = this.center.y;
+                        this.nextSegment.start.x = this.head.center.x;
+                        this.nextSegment.start.y = this.head.center.y;
                     }
                 };
             }
@@ -838,8 +984,9 @@
 
                 snake.move();
 
-                snake.draw();
                 grub.draw();
+                snake.draw();
+                
                 scoreBoard.draw();
 
                 snake.checkCollision(snakeGame.showMenu);
