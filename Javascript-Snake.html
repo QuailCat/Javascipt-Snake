@@ -322,7 +322,7 @@
 
             class SnakeSegment {
                 constructor(direction, nextSegment, startX, startY){
-                    this.start = { x : startX, y : startY },
+                    this.start = { x : startX, y : startY };
                     this.direction = direction;
                     this.nextSegment = nextSegment;
                     this.size = SNAKE_SIZE;
@@ -502,12 +502,14 @@
             }
 
             
-            function Rectangle(x, y, width, height) {
-                this.x = x,
-                this.y = y,
-                this.width = width,
-                this.height = height,
-                this.checkCollision = function(rectangle) {
+            class Rectangle {
+                constructor(x, y, width, height) {
+                    this.x = x;
+                    this.y = y;
+                    this.width = width;
+                    this.height = height;
+                }
+                checkCollision(rectangle) {
                     // check if the argument is a Rectangle
                     if( !(rectangle instanceof Rectangle)) {
                         throw "Invalid Argument";
@@ -525,7 +527,6 @@
                         // no collision
                         return false;
                     }
-
                 }
             }
 
