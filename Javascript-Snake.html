@@ -105,7 +105,6 @@
             ];
 
             var Fruit_Images = [];
-
             for (let i = 0; i < FRUIT.length; i++) {
                 let img = document.getElementById(FRUIT[i]);
                 if(img != null){
@@ -947,20 +946,20 @@
                     snake.setDirection(snake.direction);
                 }
                     
-                if (code == '38') {
-                    // Up
+                if (code == '38' || code == '87') {
+                    // Up or W
                     snake.setNextDirection(DIRECTION.UP);
                 }
-                else if (code == '40') {
-                    // Down
+                else if (code == '40' || code == '83') {
+                    // Down or S
                     snake.setNextDirection(DIRECTION.DOWN);
                 }
-                else if (code == '37') {
-                    // Left
+                else if (code == '37' || code == '65') {
+                    // Left or A
                     snake.setNextDirection(DIRECTION.LEFT);
                 }
-                else if (code == '39') {
-                    // Right
+                else if (code == '39' || code == '68') {
+                    // Right or D
                     snake.setNextDirection(DIRECTION.RIGHT);
                 }
                 else if (code == '27') {
