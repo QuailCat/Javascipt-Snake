@@ -529,19 +529,21 @@
                 }
             }
 
-            function Snake() {
-                this.enabled = false;
-                this.dx = 0;
-                this.dy = 0;
-                this.size = SNAKE_SIZE;
-                this.direction = SNAKE_START_DIRECTION;
-                this.nextDirection = null;
-                this.speed = SNAKE_SPEED;
-                this.length = SNAKE_START_LENGTH;
-                this.lastTurnSquare = null;
-                this.nextSegment = new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y);
-                this.head = new SnakeHead();
-                this.checkCollision = function(collisionCallBack) {
+            class Snake {
+                constructor(){
+                    this.enabled = false;
+                    this.dx = 0;
+                    this.dy = 0;
+                    this.size = SNAKE_SIZE;
+                    this.direction = SNAKE_START_DIRECTION;
+                    this.nextDirection = null;
+                    this.speed = SNAKE_SPEED;
+                    this.length = SNAKE_START_LENGTH;
+                    this.lastTurnSquare = null;
+                    this.nextSegment = new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y);
+                    this.head = new SnakeHead();
+                }
+                checkCollision(collisionCallBack) {
                     let canvas = document.getElementById("SnakeCanvas");
                     let halfSize = this.size/2;
                     let topLeft = { 
@@ -571,8 +573,6 @@
                         grid.spawnFood(occupied);
                     }
 
-                    
-
                     // check if snake collides with itself
                     if(this.nextSegment != null && 
                         this.nextSegment.nextSegment != null && 
@@ -594,7 +594,6 @@
 
                         }
                     }
-
 
                     // check if snake head is still on canvas
                     if(topLeft.x < 0) {
@@ -638,7 +637,7 @@
                         }
                     }
                 };
-                this.draw = function() {
+                draw() {
                     
                     if(this.nextSegment != null) {
                         this.nextSegment.update(this.length);
@@ -649,7 +648,7 @@
                     
                     return;
                 };
-                this.getOccupied = function() {
+                getOccupied() {
                     let snakeHeadSquare = grid.getSquare(this.head.center.x, this.head.center.y);
                     let occupied = [];
                     occupied.push( snakeHeadSquare.row + "," + snakeHeadSquare.col );
@@ -660,7 +659,7 @@
                     }
                     return occupied;
                 };
-                this.move = function () {
+                move() {
                     if (this.enabled == false) {
                         return;
                     }
@@ -727,7 +726,7 @@
                         }
                     }
                 };
-                this.setDirection = function(direction) {
+                setDirection(direction) {
                     let oldDirection = this.direction; 
                     
 
@@ -775,7 +774,7 @@
                     }
                     
                 };
-                this.setNextDirection = function(direction) {
+                setNextDirection(direction) {
                     if(this.direction == direction)
                         return;
 
@@ -812,7 +811,7 @@
                             break;
                     }
                 };
-                this.setCenter = function(x, y) {
+                setCenter(x, y) {
                     this.head.setCenter(x, y);
 
                     if(this.nextSegment != null) {
