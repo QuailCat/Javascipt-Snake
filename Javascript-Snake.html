@@ -278,7 +278,7 @@
                     this.eyes.left.draw(context);
                     this.eyes.right.draw(context);
                 }
-                getHitBox() {
+                get hitBox() {
                     return new Rectangle(this.center.x - this.size/4, this.center.y - this.size/4, this.size/4, this.size/4 );
                 }
                 setDirection(direction) {
@@ -446,7 +446,7 @@
                     }
                     
                     // Get snake head hitbox
-                    var snakeHeadHitBox = this.head.getHitBox();
+                    var snakeHeadHitBox = this.head.hitBox;
 
                     let foodRect = grub.hitBox;
 
