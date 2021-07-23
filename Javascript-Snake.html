@@ -136,8 +136,8 @@
 
             class Food {
                 constructor(centerX, centerY){
-                    this.center = { x : centerX, y : centerY },
-                    this.size = SNAKE_SIZE,
+                    this.center = { x : centerX, y : centerY };
+                    this.size = SNAKE_SIZE;
 
                     // set random fruit image
                     this.img = Fruit_Images.length > 0 ? Fruit_Images[Math.floor(Math.random() * Fruit_Images.length)] : null;
