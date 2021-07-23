@@ -134,13 +134,15 @@
                 }
             }
 
-            function Food(centerX, centerY) {
-                this.center = { x : centerX, y : centerY },
-                this.size = SNAKE_SIZE,
+            class Food {
+                constructor(centerX, centerY){
+                    this.center = { x : centerX, y : centerY },
+                    this.size = SNAKE_SIZE,
 
-                // set random fruit image
-                this.img = Fruit_Images.length > 0 ? Fruit_Images[Math.floor(Math.random() * Fruit_Images.length)] : null;
-                this.draw = function() {
+                    // set random fruit image
+                    this.img = Fruit_Images.length > 0 ? Fruit_Images[Math.floor(Math.random() * Fruit_Images.length)] : null;
+                }
+                draw() {
                     var canvas = document.getElementById("SnakeCanvas");
                     var context = canvas.getContext("2d");
                     context.beginPath();
@@ -159,7 +161,7 @@
 
                     context.closePath();
                 }
-                this.rectangle = function() {
+                rectangle() {
                     return new Rectangle(
                         this.center.x - this.size/2, 
                         this.center.y - this.size/2, 
