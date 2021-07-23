@@ -823,23 +823,18 @@
 
             var snake = new Snake();
 
-            
-        
-            
-
-            function SnakeGame() {
-                this.running = false;
-                this.food = new Food(FOOD_START_X, FOOD_START_Y);
-                this.snake = null;
-                this.init = function() {
-
-                };
-                this.pause = function() {
+            class SnakeGame {
+                constructor() {
+                    this.running = false;
+                    this.food = new Food(FOOD_START_X, FOOD_START_Y);
+                    this.snake = null;
+                }
+                pause() {
                     this.running = false;
 
                     snake.enabled = false;
                 }
-                this.reset = function() {
+                reset() {
                     this.pause();
 
                     // set all values to default
@@ -854,16 +849,16 @@
 
                     this.start();
                 };
-                this.resume = function() {
+                resume() {
 
                     this.running = true;
                     snake.enabled = true;
                 };
-                this.showMenu = function() {
+                showMenu() {
                     snakeGame.pause();
                     modal.style.display = "block";
                 }
-                this.start = function() {
+                start() {
                     this.running = true;
                 }
             }
