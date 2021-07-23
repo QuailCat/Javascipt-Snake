@@ -18,6 +18,11 @@
             <img id="plum" width="32" height="32" src="images/plum.png" alt="plum" />
             <img id="strawberry" width="32" height="32" src="images/strawberry.png" alt="strawberry" />
             <img id="watermelon" width="32" height="32" src="images/watermelon.png" alt="watermelon" />
+
+            <img id="snake-down" width="32" height="32" src="images/snake-down.png" alt="snake-down" />
+            <img id="snake-left" width="32" height="32" src="images/snake-left.png" alt="snake-left" />
+            <img id="snake-right" width="32" height="32" src="images/snake-right.png" alt="snake-right" />
+            <img id="snake-up" width="32" height="32" src="images/snake-up.png" alt="snake-up" />
         </div>
         <canvas id="SnakeScoreboard" width="480" height="60" style="border:1px solid #000000"></canvas>
         <canvas id="SnakeCanvas" width="480" height="480" style="border:1px solid #000000"></canvas>
@@ -61,6 +66,13 @@
                 RIGHT : "RIGHT"
             };
    
+            const SNAKE_IMAGES = {
+                "UP" : document.getElementById("snake-up"),
+                "DOWN"  : document.getElementById("snake-down"),
+                "LEFT"  : document.getElementById("snake-left"),
+                "RIGHT" : document.getElementById("snake-right")
+            }
+
             const POINTS_PER_FOOD = 1;
 
             const GRID_COLUMNS = 16;
@@ -83,62 +95,6 @@
 
             const SNAKE_SCOREBOARD = document.getElementById("SnakeScoreboard");
             const SCOREBOARD_CTX = SnakeScoreboard.getContext("2d");
-
-            const Triangle = {
-                fill : function(centerX, centerY, size, direction) {
-                    var canvas = document.getElementById("SnakeCanvas");
-                    var context = canvas.getContext("2d");
-                    context.beginPath();
-
-                    this.prepare(centerX, centerY, size, direction, context);
-
-                    context.fill();
-                    context.closePath();
-                },
-                prepare : function(centerX, centerY, size, direction, context) {
-                    let halfSize = size/2;
-                    let quarterSize = size/4;
-
-                    switch (direction) {
-                        case DIRECTION.UP:
-                            context.moveTo(centerX, centerY - halfSize);
-                            context.lineTo(centerX + halfSize, centerY + halfSize);
-                            context.lineTo(centerX - halfSize, centerY + halfSize);
-                            context.lineTo(centerX, centerY - halfSize);
-                            break;
-                        case DIRECTION.DOWN:
-                            context.moveTo(centerX, centerY + halfSize);
-                            context.lineTo(centerX + halfSize, centerY - halfSize);
-                            context.lineTo(centerX - halfSize, centerY - halfSize);
-                            context.lineTo(centerX, centerY + halfSize);
-                            break;
-                        case DIRECTION.LEFT:
-                            context.moveTo(centerX - halfSize, centerY);
-                            context.lineTo(centerX + halfSize, centerY - halfSize);
-                            context.lineTo(centerX + halfSize, centerY + halfSize);
-                            context.lineTo(centerX - halfSize, centerY);
-                            break;
-                        case DIRECTION.RIGHT:
-                            context.moveTo(centerX + halfSize, centerY);
-                            context.lineTo(centerX - halfSize, centerY + halfSize);
-                            context.lineTo(centerX - halfSize, centerY - halfSize);
-                            context.lineTo(centerX + halfSize, centerY);
-                            break;
-                        default:
-                            break;
-                    }
-                },
-                stroke : function(centerX, centerY, size, direction) {
-                    var canvas = document.getElementById("SnakeCanvas");
-                    var context = canvas.getContext("2d");
-                    context.beginPath();
-                    
-                    this.prepare(centerX, centerY, size, direction, context);
-
-                    context.stroke();
-                    context.closePath();
-                }
-            }
 
             class Food {
                 constructor(centerX, centerY){
@@ -262,17 +218,18 @@
                 constructor() {
                     this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
                     this.size = SNAKE_SIZE;
-                    this.distanceBetweenEyes = this.size/4;
-                    
+                    this.distanceBetweenEyes = this.size/5;
+                    this.eyeShift = this.size/4;
                     this.eyes = { 
-                        right : new SnakeEye(this.size/6), 
-                        left : new SnakeEye(this.size/6) 
+                        right : new SnakeEye(this.size/7), 
+                        left : new SnakeEye(this.size/7) 
                     }; 
                     this.setDirection(SNAKE_START_DIRECTION);
                 }
                 draw() {
-                    Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
-                    
+                    let img = SNAKE_IMAGES[this.direction];
+                    SNAKE_CTX.drawImage(img, this.center.x - img.width/2, this.center.y - img.height/2);
+
                     this.eyes.left.draw();
                     this.eyes.right.draw();
                 }
@@ -286,20 +243,20 @@
 
                     switch(direction) {
                         case DIRECTION.UP:
-                            this.eyes.left.setCenter(this.center.x - this.distanceBetweenEyes, this.center.y);
-                            this.eyes.right.setCenter(this.center.x + this.distanceBetweenEyes, this.center.y); 
+                            this.eyes.left.setCenter(this.center.x - this.distanceBetweenEyes, this.center.y + this.eyeShift);
+                            this.eyes.right.setCenter(this.center.x + this.distanceBetweenEyes, this.center.y + this.eyeShift); 
                             break;
                         case DIRECTION.DOWN:
-                            this.eyes.left.setCenter(this.center.x + this.distanceBetweenEyes, this.center.y);
-                            this.eyes.right.setCenter(this.center.x - this.distanceBetweenEyes, this.center.y); 
+                            this.eyes.left.setCenter(this.center.x + this.distanceBetweenEyes, this.center.y - this.eyeShift);
+                            this.eyes.right.setCenter(this.center.x - this.distanceBetweenEyes, this.center.y - this.eyeShift); 
                             break;
                         case DIRECTION.LEFT:
-                            this.eyes.left.setCenter(this.center.x, this.center.y + this.distanceBetweenEyes);
-                            this.eyes.right.setCenter(this.center.x, this.center.y - this.distanceBetweenEyes);
+                            this.eyes.left.setCenter(this.center.x + this.eyeShift, this.center.y + this.distanceBetweenEyes);
+                            this.eyes.right.setCenter(this.center.x + this.eyeShift, this.center.y - this.distanceBetweenEyes);
                             break;
                         case DIRECTION.RIGHT:
-                            this.eyes.left.setCenter(this.center.x, this.center.y - this.distanceBetweenEyes);
-                            this.eyes.right.setCenter(this.center.x, this.center.y + this.distanceBetweenEyes);
+                            this.eyes.left.setCenter(this.center.x - this.eyeShift, this.center.y - this.distanceBetweenEyes);
+                            this.eyes.right.setCenter(this.center.x - this.eyeShift, this.center.y + this.distanceBetweenEyes);
                             break;
                         default:
                             break;
@@ -332,7 +289,7 @@
                     SNAKE_CTX.rect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                     
                     let saveFillStyle = SNAKE_CTX.fillStyle;
-                    SNAKE_CTX.fillStyle = "blue";
+                    SNAKE_CTX.fillStyle = "green";
                     SNAKE_CTX.strokeStyle = "black";
                     SNAKE_CTX.fill();
 
