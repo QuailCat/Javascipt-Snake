@@ -96,62 +96,6 @@
             const SNAKE_SCOREBOARD = document.getElementById("SnakeScoreboard");
             const SCOREBOARD_CTX = SnakeScoreboard.getContext("2d");
 
-            const Triangle = {
-                fill : function(centerX, centerY, size, direction) {
-                    var canvas = document.getElementById("SnakeCanvas");
-                    var context = canvas.getContext("2d");
-                    context.beginPath();
-
-                    this.prepare(centerX, centerY, size, direction, context);
-
-                    context.fill();
-                    context.closePath();
-                },
-                prepare : function(centerX, centerY, size, direction, context) {
-                    let halfSize = size/2;
-                    let quarterSize = size/4;
-
-                    switch (direction) {
-                        case DIRECTION.UP:
-                            context.moveTo(centerX, centerY - halfSize);
-                            context.lineTo(centerX + halfSize, centerY + halfSize);
-                            context.lineTo(centerX - halfSize, centerY + halfSize);
-                            context.lineTo(centerX, centerY - halfSize);
-                            break;
-                        case DIRECTION.DOWN:
-                            context.moveTo(centerX, centerY + halfSize);
-                            context.lineTo(centerX + halfSize, centerY - halfSize);
-                            context.lineTo(centerX - halfSize, centerY - halfSize);
-                            context.lineTo(centerX, centerY + halfSize);
-                            break;
-                        case DIRECTION.LEFT:
-                            context.moveTo(centerX - halfSize, centerY);
-                            context.lineTo(centerX + halfSize, centerY - halfSize);
-                            context.lineTo(centerX + halfSize, centerY + halfSize);
-                            context.lineTo(centerX - halfSize, centerY);
-                            break;
-                        case DIRECTION.RIGHT:
-                            context.moveTo(centerX + halfSize, centerY);
-                            context.lineTo(centerX - halfSize, centerY + halfSize);
-                            context.lineTo(centerX - halfSize, centerY - halfSize);
-                            context.lineTo(centerX + halfSize, centerY);
-                            break;
-                        default:
-                            break;
-                    }
-                },
-                stroke : function(centerX, centerY, size, direction) {
-                    var canvas = document.getElementById("SnakeCanvas");
-                    var context = canvas.getContext("2d");
-                    context.beginPath();
-                    
-                    this.prepare(centerX, centerY, size, direction, context);
-
-                    context.stroke();
-                    context.closePath();
-                }
-            }
-
             class Food {
                 constructor(centerX, centerY){
                     this.center = { x : centerX, y : centerY };
@@ -283,7 +227,6 @@
                     this.setDirection(SNAKE_START_DIRECTION);
                 }
                 draw() {
-                    Triangle.fill(this.center.x, this.center.y, this.size, this.direction);
                     let img = SNAKE_IMAGES[this.direction];
                     SNAKE_CTX.drawImage(img, this.center.x - img.width/2, this.center.y - img.height/2);
 
