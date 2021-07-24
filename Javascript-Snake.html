@@ -243,8 +243,8 @@
                     let col = Math.floor(x/this.squareSize);
                     let row = Math.floor(y/this.squareSize);
                     return new GridSquare(
-                        row, 
                         col, 
+                        row, 
                         col * this.squareSize + this.squareSize/2, 
                         row * this.squareSize + this.squareSize/2
                     ); 
@@ -297,7 +297,7 @@
                             let key = i + "," + j;
                             if(!occupied.includes(key)){
                                 unoccupiedSquares.push( {"row" : i, "col": j} );
-                            }     
+                            }   
                         }
                     }
 
