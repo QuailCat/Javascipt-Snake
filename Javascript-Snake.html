@@ -9,13 +9,25 @@
     <body>
         <div class="hidden">
             <img id="apple" width="32" height="32" src="images/apple.png" alt="apple" />
+            <img id="banana" width="32" height="32" src="images/banana.png" alt="banana" />
             <img id="blueberry" width="32" height="32" src="images/blueberry.png" alt="blueberry" />
+            <img id="cherry" width="32" height="32" src="images/cherry.png" alt="cherry" />
             <img id="dragonfruit" width="32" height="32" src="images/dragon-fruit.png" alt="dragon-fruit" />
-            <img id="mango" width="32" height="32" src="images/mango.png" alt="mango" />
+            <img id="fig" width="32" height="32" src="images/fig.png" alt="fig" />
+            <img id="grape" width="32" height="32" src="images/grape.png" alt="grape" />
+            <img id="grapefruit" width="32" height="32" src="images/grapefruit.png" alt="grapefruit" />
+            <img id="kiwi" width="32" height="32" src="images/kiwi.png" alt="kiwi" />
+            <img id="mango" width="32" height="32" src="images/mangosteen.png" alt="mangosteen" />
+            <img id="mangosteen" width="32" height="32" src="images/mango.png" alt="mango" />
             <img id="melon" width="32" height="32" src="images/melon.png" alt="melon" />
+            <img id="orange" width="32" height="32" src="images/orange.png" alt="orange" />
             <img id="peach" width="32" height="32" src="images/peach.png" alt="peach" />
             <img id="pear" width="32" height="32" src="images/pear.png" alt="pear" />
+            <img id="persimmon" width="32" height="32" src="images/persimmon.png" alt="persimmon" />
+            <img id="pineapple" width="32" height="32" src="images/pineapple.png" alt="pineapple" />
             <img id="plum" width="32" height="32" src="images/plum.png" alt="plum" />
+            <img id="pomegranate" width="32" height="32" src="images/pomegranate.png" alt="pomegranate" />
+            <img id="rasberry" width="32" height="32" src="images/raspberry.png" alt="rasberry" />
             <img id="strawberry" width="32" height="32" src="images/strawberry.png" alt="strawberry" />
             <img id="watermelon" width="32" height="32" src="images/watermelon.png" alt="watermelon" />
 
@@ -40,13 +52,25 @@
         <script>
             const FRUIT = [
                 "apple",
+                "banana",
                 "blueberry",
+                "cherry",
                 "dragonfruit",
+                "fig",
+                "grape",
+                "grapefruit",
+                "kiwi",
                 "mango",
+                "mangosteen",
+                "orange",
                 "melon",
                 "peach",
                 "pear",
+                "persimmon",
+                "pineapple",
                 "plum",
+                "pomegranate",
+                "rasberry",
                 "strawberry",
                 "watermelon"
             ];
@@ -96,7 +120,7 @@
             const SNAKE_SCOREBOARD = document.getElementById("SnakeScoreboard");
             const SCOREBOARD_CTX = SnakeScoreboard.getContext("2d");
    
-            
+            /** Represents a piece of fruit that the snake can eat */
             class Food {
                 constructor(centerX, centerY){
                     this.center = { x : centerX, y : centerY };
@@ -140,6 +164,7 @@
             }
             var food = new Food(FOOD_START_X, FOOD_START_Y);
 
+            /** Represents the game scoreboard */
             class ScoreBoard {
                 constructor() {
                     this.score = 0;
@@ -184,6 +209,7 @@
             }
             const scoreBoard = new ScoreBoard();
 
+            /** Represents one square of the game grid */
             class GridSquare {
                 /**
                  * Constructor for GridSquare
@@ -199,6 +225,7 @@
                 }
             }
 
+            /** Represents the game's grid */
             class Grid {
                 constructor() {
                     this.squareSize = GRID_SQUARE_SIZE;
@@ -286,7 +313,7 @@
             }
             const grid = new Grid();
 
-            
+            /** A rectangle primarily used for hitboxes */
             class Rectangle {
                 /**
                  * Rectangle Constructor
@@ -327,6 +354,7 @@
                 }
             }
 
+            /** An eye that can look at a provided target */
             class SnakeEye {
                 /**
                  * SnakeEye constructor
@@ -400,6 +428,7 @@
                 }
             }
 
+            /** The head of the snake */
             class SnakeHead {
                 constructor() {
                     this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
@@ -479,6 +508,7 @@
                 }
             }
 
+            /** A segment of the snake's body */
             class SnakeSegment {
                 /**
                  * Constructor for SnakeSegment
@@ -600,6 +630,7 @@
                 }
             }
 
+            /** Represents the entire snake */
             class Snake {
                 constructor(){
                     this.enabled = false;
@@ -918,6 +949,7 @@
             }
             var snake = new Snake();
 
+            /** Represents the game of Snake */
             class SnakeGame {
                 constructor() {
                     this.running = false;
