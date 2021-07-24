@@ -184,7 +184,7 @@
                     };
                 }
                 draw() {
-                    let saveFillStyle = SNAKE_CTX.fillStyle;
+                    SNAKE_CTX.clearRect(0, 0, SNAKE_CANVAS.width, SNAKE_CANVAS.height);
 
                     SNAKE_CTX.beginPath();
 
@@ -211,10 +211,8 @@
                             } 
                         }
                     }
-
-                    
+                  
                     SNAKE_CTX.closePath();
-                    SNAKE_CTX.fillStyle = saveFillStyle;
                     return;
                 }
                 spawnFood(occupied) {
@@ -773,13 +771,12 @@
             class SnakeGame {
                 constructor() {
                     this.running = false;
-                    this.food = new Food(FOOD_START_X, FOOD_START_Y);
-                    this.snake = null;
+                    this.menu = document.getElementById("menuModal");
 
                     // listen for key presses
-                    document.addEventListener('keydown', function(e) {
+                    document.addEventListener('keydown', (e) => {
                         var code = e.which || e.keyCode;
-                        if(snakeGame.running == false) {
+                        if(this.running == false) {
                             return;
                         }
 
@@ -806,9 +803,25 @@
                         }
                         else if (code == '27') {
                             // Esc
-                            snakeGame.showMenu();       
+                            this.showMenu();       
                         }              
                     });
+                }
+                draw() {
+
+                }
+                onTick() {
+                    snake.move();
+
+                    grid.draw();
+                    food.draw();
+                    snake.draw();
+                    
+                    this.draw();
+
+                    scoreBoard.draw();
+
+                    snake.checkCollision(snakeGame.showMenu); 
                 }
                 pause() {
                     this.running = false;
@@ -823,21 +836,19 @@
                     food = new Food(FOOD_START_X, FOOD_START_Y);
 
                     // Close menu if it is open
-                    let menu = document.getElementById("menuModal");
-                    menu.style.display = "none";
+                    this.menu.style.display = "none";
 
                     scoreBoard.reset();
 
                     this.start();
                 };
                 resume() {
-
                     this.running = true;
                     snake.enabled = true;
                 };
                 showMenu() {
-                    snakeGame.pause();
-                    modal.style.display = "block";
+                    this.pause();
+                    this.menu.style.display = "block";
                 }
                 start() {
                     this.running = true;
@@ -845,25 +856,7 @@
             }
 
             var snakeGame = new SnakeGame();
-            var modal = document.getElementById("menuModal");
-
-            var count = 0;
-            function onTick() {
-                SNAKE_CTX.clearRect(0, 0, SNAKE_CANVAS.width, SNAKE_CANVAS.height);
-            
-                grid.draw();
-
-                snake.move();
-
-                food.draw();
-                snake.draw();
-                
-                scoreBoard.draw();
-
-                snake.checkCollision(snakeGame.showMenu); 
-            }
-
-            setInterval(onTick, 20);
+            setInterval(snakeGame.onTick, 20);
             snakeGame.start();
         </script>
     </body>
