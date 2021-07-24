@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            Javascript-Snake
+        </title>
+    </head>
+    <link rel="stylesheet" href="styles/snakeStyle.css">
+    <body>
+        <div class="hidden">
+            <img id="apple" width="32" height="32" src="images/apple.png" alt="apple" />
+            <img id="banana" width="32" height="32" src="images/banana.png" alt="banana" />
+            <img id="blueberry" width="32" height="32" src="images/blueberry.png" alt="blueberry" />
+            <img id="cherry" width="32" height="32" src="images/cherry.png" alt="cherry" />
+            <img id="dragonfruit" width="32" height="32" src="images/dragon-fruit.png" alt="dragon-fruit" />
+            <img id="fig" width="32" height="32" src="images/fig.png" alt="fig" />
+            <img id="grape" width="32" height="32" src="images/grape.png" alt="grape" />
+            <img id="grapefruit" width="32" height="32" src="images/grapefruit.png" alt="grapefruit" />
+            <img id="kiwi" width="32" height="32" src="images/kiwi.png" alt="kiwi" />
+            <img id="mango" width="32" height="32" src="images/mangosteen.png" alt="mangosteen" />
+            <img id="mangosteen" width="32" height="32" src="images/mango.png" alt="mango" />
+            <img id="melon" width="32" height="32" src="images/melon.png" alt="melon" />
+            <img id="orange" width="32" height="32" src="images/orange.png" alt="orange" />
+            <img id="peach" width="32" height="32" src="images/peach.png" alt="peach" />
+            <img id="pear" width="32" height="32" src="images/pear.png" alt="pear" />
+            <img id="persimmon" width="32" height="32" src="images/persimmon.png" alt="persimmon" />
+            <img id="pineapple" width="32" height="32" src="images/pineapple.png" alt="pineapple" />
+            <img id="plum" width="32" height="32" src="images/plum.png" alt="plum" />
+            <img id="pomegranate" width="32" height="32" src="images/pomegranate.png" alt="pomegranate" />
+            <img id="rasberry" width="32" height="32" src="images/raspberry.png" alt="rasberry" />
+            <img id="strawberry" width="32" height="32" src="images/strawberry.png" alt="strawberry" />
+            <img id="watermelon" width="32" height="32" src="images/watermelon.png" alt="watermelon" />
+
+            <img id="snake-down" width="32" height="32" src="images/snake-down.png" alt="snake-down" />
+            <img id="snake-left" width="32" height="32" src="images/snake-left.png" alt="snake-left" />
+            <img id="snake-right" width="32" height="32" src="images/snake-right.png" alt="snake-right" />
+            <img id="snake-up" width="32" height="32" src="images/snake-up.png" alt="snake-up" />
+        </div>
+        <canvas id="SnakeScoreboard" width="480" height="60" style="border:1px solid #000000"></canvas>
+        <canvas id="SnakeCanvas" width="480" height="480" style="border:1px solid #000000"></canvas>
+        <div class="center">
+            Icons made by&nbsp<a href="https://www.freepik.com" title="Freepik">Freepik</a>&nbspfrom&nbsp<a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+        </div>
+        <div id="menuModal" class="modal">
+            <div class="modal-content" onshow="snakeGame.pause()">
+                <div class="center">
+                    <button class="button"  onclick="snakeGame.reset()">Restart</button>
+                </div>
+                
+            </div>
+        </div>
+        <script>
+            const FRUIT = [
+                "apple",
+                "banana",
+                "blueberry",
+                "cherry",
+                "dragonfruit",
+                "fig",
+                "grape",
+                "grapefruit",
+                "kiwi",
+                "mango",
+                "mangosteen",
+                "orange",
+                "melon",
+                "peach",
+                "pear",
+                "persimmon",
+                "pineapple",
+                "plum",
+                "pomegranate",
+                "rasberry",
+                "strawberry",
+                "watermelon"
+            ];
+
+            var Fruit_Images = [];
+            for (let i = 0; i < FRUIT.length; i++) {
+                let img = document.getElementById(FRUIT[i]);
+                if(img != null){
+                    Fruit_Images.push(img);
+                }
+            }
+
+            const DIRECTION = {
+                UP    : "UP",
+                DOWN  : "DOWN",
+                LEFT  : "LEFT",
+                RIGHT : "RIGHT"
+            };
+   
+            const SNAKE_IMAGES = {
+                "UP" : document.getElementById("snake-up"),
+                "DOWN"  : document.getElementById("snake-down"),
+                "LEFT"  : document.getElementById("snake-left"),
+                "RIGHT" : document.getElementById("snake-right")
+            }
+
+            const POINTS_PER_FOOD = 1;
+
+            const GRID_COLUMNS = 16;
+            const GRID_ROWS = 16;
+            const GRID_SQUARE_SIZE = 30;
+
+            const SNAKE_SIZE = Math.floor(GRID_SQUARE_SIZE * 0.8);
+            const SNAKE_GROWTH_RATE = 1 * SNAKE_SIZE;
+            const SNAKE_SPEED = 4;
+            const SNAKE_START_LENGTH = SNAKE_SIZE * 5;
+            const SNAKE_START_X = Math.floor(GRID_COLUMNS/4) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
+            const SNAKE_START_Y = Math.floor(GRID_ROWS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
+            const SNAKE_START_DIRECTION = DIRECTION.DOWN;
+
+            const FOOD_START_X = Math.ceil(GRID_COLUMNS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
+            const FOOD_START_Y = Math.ceil(GRID_ROWS/2) * GRID_SQUARE_SIZE + GRID_SQUARE_SIZE/2;
+
+            const SNAKE_CANVAS = document.getElementById("SnakeCanvas");
+            const SNAKE_CTX = SNAKE_CANVAS.getContext("2d");
+
+            const SNAKE_SCOREBOARD = document.getElementById("SnakeScoreboard");
+            const SCOREBOARD_CTX = SnakeScoreboard.getContext("2d");
+   
+            /** Represents a piece of fruit that the snake can eat */
+            class Food {
+                constructor(centerX, centerY){
+                    this.center = { x : centerX, y : centerY };
+                    this.size = SNAKE_SIZE;
+
+                    // set random fruit image
+                    this.img = Fruit_Images.length > 0 ? Fruit_Images[Math.floor(Math.random() * Fruit_Images.length)] : null;
+                }
+                /**
+                 * Draw the food on the snake canvas
+                 */
+                draw() {
+                    SNAKE_CTX.beginPath();
+
+                    if(this.img != null) {
+                        SNAKE_CTX.drawImage(this.img, this.center.x - this.img.width/2, this.center.y - this.img.width/2);
+                    }
+                    else {
+                        // fallback if no image available
+                        SNAKE_CTX.arc(this.center.x, this.center.y, this.size/2, 0, 2 * Math.PI);
+                        SNAKE_CTX.fillStyle = "yellow";
+                        SNAKE_CTX.strokeStyle = "black";
+                        SNAKE_CTX.fill();
+                        SNAKE_CTX.stroke();
+                    }     
+
+                    SNAKE_CTX.closePath();
+                }
+                /**
+                 * Get the hitbox for the food
+                 * @returns {Rectangle} Rectangle that represents the hitbox
+                 */
+                get hitBox() {
+                    return new Rectangle(
+                        this.center.x - this.size/2, 
+                        this.center.y - this.size/2, 
+                        this.size, 
+                        this.size
+                    );
+                }
+            }
+            var food = new Food(FOOD_START_X, FOOD_START_Y);
+
+            /** Represents the game scoreboard */
+            class ScoreBoard {
+                constructor() {
+                    this.score = 0;
+                    this.highScore = 0;
+                }
+                /**
+                 * Add points to the current score and update highscore if prevous highscore has been exceeded
+                 * @param {number} points - The points to add to score
+                 */
+                addToScore(points) {
+                    this.score += points;
+                    this.highScore = Math.max(this.highScore, this.score);
+                }
+                /**
+                 * Draw the scoreboard
+                 */
+                draw() {
+                    SCOREBOARD_CTX.beginPath();
+
+                    SCOREBOARD_CTX.rect(0, 0, SNAKE_SCOREBOARD.width, SNAKE_SCOREBOARD.height);
+                    SCOREBOARD_CTX.fillStyle = "green";
+                    SCOREBOARD_CTX.fill();
+                    
+                    SCOREBOARD_CTX.closePath();
+
+                    SCOREBOARD_CTX.font = "20px arial";
+                    SCOREBOARD_CTX.fillStyle = "black";
+
+                    // current score
+                    SCOREBOARD_CTX.fillText('Score: ' + this.score, 60, 50);
+
+                    // high score
+                    SCOREBOARD_CTX.fillText('High Score: ' + this.highScore, 300, 50);
+                }
+                /**
+                 * Reset the scoreboard by setting score to 0
+                 * @returns {any}
+                 */
+                reset() {
+                    this.score = 0;
+                }
+            }
+            const scoreBoard = new ScoreBoard();
+
+            /** Represents one square of the game grid */
+            class GridSquare {
+                /**
+                 * Constructor for GridSquare
+                 * @param {any} col - The column of the square
+                 * @param {any} row - The row of the square
+                 * @param {any} x - The x coordinate of the square's centerpoint
+                 * @param {any} y - The y coordinate of the square's centerpoint
+                 */
+                constructor(col, row, x, y) {
+                    this.col = col;
+                    this.row = row;
+                    this.center = { x : x, y : y };
+                }
+            }
+
+            /** Represents the game's grid */
+            class Grid {
+                constructor() {
+                    this.squareSize = GRID_SQUARE_SIZE;
+                    this.rows = GRID_ROWS;
+                    this.columns = GRID_COLUMNS;
+                }   
+                   
+                /**
+                 * Returns the row and column of the square on the grid that the provided coordinates are in
+                 * @param {number} x - The x coordinate 
+                 * @param {rumber} y - the y coordinate
+                 * @returns {GridSquare} GridSquare containing the row and column of the square as well as its center point.
+                 */
+                getSquare(x, y) {
+                    let col = Math.floor(x/this.squareSize);
+                    let row = Math.floor(y/this.squareSize);
+                    return new GridSquare(
+                        col, 
+                        row, 
+                        col * this.squareSize + this.squareSize/2, 
+                        row * this.squareSize + this.squareSize/2
+                    ); 
+            
+                }
+                /**
+                 * Draw the grid
+                 */
+                draw() {
+                    SNAKE_CTX.clearRect(0, 0, SNAKE_CANVAS.width, SNAKE_CANVAS.height);
+
+                    SNAKE_CTX.beginPath();
+
+                    // Draw background color
+                    SNAKE_CTX.fillStyle = "#996633";
+                    SNAKE_CTX.rect(0, 0, this.columns * this.squareSize, this.rows * this.squareSize);
+                    SNAKE_CTX.fill();
+
+                    SNAKE_CTX.closePath();
+
+                    // Draw Grid
+                    
+                    SNAKE_CTX.fillStyle = "#999966";
+                    for (let col = 0; col < this.columns; col++) {
+                        for (let row = 0; row < this.rows; row++) {
+                            if((col + row) % 2 == 0) {
+                                SNAKE_CTX.beginPath();
+                                SNAKE_CTX.rect(col * this.squareSize, 
+                                    row * this.squareSize, 
+                                    this.squareSize, 
+                                    this.squareSize);
+                                    SNAKE_CTX.fill();
+                                    SNAKE_CTX.closePath();
+                            } 
+                        }
+                    }
+                  
+                    SNAKE_CTX.closePath();
+                    return;
+                }
+                /**
+                 * Spawn food in an unoccupied space
+                 * @param {array} occupied - Array of occupied squares in the format "{row},{col}"
+                 */
+                spawnFood(occupied) {
+                    // Get the array of unoccupied squares
+                    let unoccupiedSquares = [];
+                    for(let i = 0; i < this.rows; i++) {
+                        for(let j = 0; j < this.columns; j++) {
+                            let key = i + "," + j;
+                            if(!occupied.includes(key)){
+                                unoccupiedSquares.push( {"row" : i, "col": j} );
+                            }   
+                        }
+                    }
+
+                    // Choose a random unoccupied square
+                    let randomSquare = unoccupiedSquares[Math.floor(Math.random() * unoccupiedSquares.length)];
+
+                    // Get center point
+                    let x = randomSquare.col * this.squareSize + this.squareSize/2;
+                    let y = randomSquare.row * this.squareSize + this.squareSize/2;
+                    
+                    food = new Food(x, y);
+                }
+            }
+            const grid = new Grid();
+
+            /** A rectangle primarily used for hitboxes */
+            class Rectangle {
+                /**
+                 * Rectangle Constructor
+                 * @param {number} x - The x coordinate of the upper left corner
+                 * @param {number} y - The y coordinate of the upper left corner
+                 * @param {number} width - The width of the Rectangle
+                 * @param {number} height - the height of the Rectangle
+                 */
+                constructor(x, y, width, height) {
+                    this.x = x;
+                    this.y = y;
+                    this.width = width;
+                    this.height = height;
+                }
+                /**
+                 * Check to see if it has collided with rectangle
+                 * @param {any} rectangle - The rectangle to check for collisions
+                 * @returns {boolean} Returns true if collision detected, false otherwise
+                 */
+                checkCollision(rectangle) {
+                    // check if the argument is a Rectangle
+                    if( !(rectangle instanceof Rectangle)) {
+                        throw "Invalid Argument";
+                    }
+
+                    // check for collision using axis-aligned bounding box detection
+                    if(this.x < (rectangle.x + rectangle.width) &&
+                        (this.x + this.width) > rectangle.x &&
+                        this.y < (rectangle.y + rectangle.height) &&
+                        (this.y + this.height) > rectangle.y) {
+                        // collision detected
+                        return true;
+                    }
+                    else {
+                        // no collision
+                        return false;
+                    }
+                }
+            }
+
+            /** An eye that can look at a provided target */
+            class SnakeEye {
+                /**
+                 * SnakeEye constructor
+                 * @param {number} radius - The radius of the snake eye
+                 */
+                constructor(radius) {
+                    this.center;
+                    this.target;
+                    this.radius = radius;
+                    this.pupilRadius = this.radius/2;
+                    this.pupilDistance = this.radius - this.pupilRadius;
+                }
+                /**
+                 * Draw the snake eye
+                 */
+                draw() {
+                    // Draw Eyeball
+                    SNAKE_CTX.beginPath();
+                    SNAKE_CTX.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
+                    SNAKE_CTX.fillStyle = "white";
+                    SNAKE_CTX.fill();
+
+                    SNAKE_CTX.closePath();
+
+                    // Draw Pupil
+                    SNAKE_CTX.beginPath();
+                    this.setTarget(food.center.x, food.center.y);
+
+                    // Determine where the eye should be looking
+                    let vectorLength = Math.sqrt(Math.pow(this.target.x - this.center.x, 2) + Math.pow(this.target.y - this.center.y, 2));
+                    let v = { x : this.target.x - this.center.x, y : this.target.y - this.center.y }
+                    // Normalize vector
+                    let u = { x : v.x/vectorLength, y : v.y/vectorLength };
+
+                    SNAKE_CTX.arc(
+                        this.center.x + u.x * this.pupilDistance, 
+                        this.center.y + u.y * this.pupilDistance, 
+                        this.pupilRadius, 
+                        0, 
+                        2 * Math.PI
+                    );
+                    SNAKE_CTX.fillStyle = "black";
+                    SNAKE_CTX.fill();
+
+                    SNAKE_CTX.closePath();
+                }
+                /**
+                 * Move the snake eye
+                 * @param {number} dx - Distance to move on the x plane
+                 * @param {number} dy - Distance to move on the y plane
+                 */
+                move(dx, dy) {
+                    this.setCenter(this.center.x + dx, this.center.y + dy);
+                }
+                /**
+                 * Set the center point of the snake eye
+                 * @param {number} x - The new x coordinate of the center point
+                 * @param {number} y - The new y coordinate of the center point
+                 */
+                setCenter(x, y) {
+                    this.center = { x : x , y : y };
+                }
+                /**
+                 * Set the location that the eye is looking at
+                 * @param {number} x - The x coordinate
+                 * @param {number} y - the y coordinate
+                 */
+                setTarget(x, y) {
+                    // The location the eye is looking at
+                    this.target = { x : x, y : y };
+                }
+            }
+
+            /** The head of the snake */
+            class SnakeHead {
+                constructor() {
+                    this.center = { x : SNAKE_START_X, y : SNAKE_START_Y };
+                    this.size = SNAKE_SIZE;
+                    this.distanceBetweenEyes = this.size/5;
+                    this.eyeShift = this.size/4;
+                    this.eyes = { 
+                        right : new SnakeEye(this.size/7), 
+                        left : new SnakeEye(this.size/7) 
+                    }; 
+                    this.setDirection(SNAKE_START_DIRECTION);
+                }
+                /**
+                 * Draw the snake head
+                 */
+                draw() {
+                    // Draw the head
+                    let img = SNAKE_IMAGES[this.direction];
+                    SNAKE_CTX.drawImage(img, this.center.x - img.width/2, this.center.y - img.height/2);
+
+                    // Draw the eyes
+                    this.eyes.left.draw();
+                    this.eyes.right.draw();
+                }
+                /**
+                 * Returns the hitbox of the snake head
+                 * @returns {Rectangle} Returns a Rectangle that represents the hitbox
+                 */
+                get hitBox() {
+                    return new Rectangle(this.center.x - this.size/4, this.center.y - this.size/4, this.size/4, this.size/4 );
+                }
+                /**
+                 * Set the direction of the snake head
+                 * @param {Direction} direction - A direction from the DIRECTION enum
+                 */
+                setDirection(direction) {
+                    if(this.direction == direction) {
+                        return;
+                    }
+
+                    switch(direction) {
+                        case DIRECTION.UP:
+                            this.eyes.left.setCenter(this.center.x - this.distanceBetweenEyes, this.center.y + this.eyeShift);
+                            this.eyes.right.setCenter(this.center.x + this.distanceBetweenEyes, this.center.y + this.eyeShift); 
+                            break;
+                        case DIRECTION.DOWN:
+                            this.eyes.left.setCenter(this.center.x + this.distanceBetweenEyes, this.center.y - this.eyeShift);
+                            this.eyes.right.setCenter(this.center.x - this.distanceBetweenEyes, this.center.y - this.eyeShift); 
+                            break;
+                        case DIRECTION.LEFT:
+                            this.eyes.left.setCenter(this.center.x + this.eyeShift, this.center.y + this.distanceBetweenEyes);
+                            this.eyes.right.setCenter(this.center.x + this.eyeShift, this.center.y - this.distanceBetweenEyes);
+                            break;
+                        case DIRECTION.RIGHT:
+                            this.eyes.left.setCenter(this.center.x - this.eyeShift, this.center.y - this.distanceBetweenEyes);
+                            this.eyes.right.setCenter(this.center.x - this.eyeShift, this.center.y + this.distanceBetweenEyes);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    this.direction = direction;
+                }
+                /**
+                 * Set the center point of the snake head
+                 * @param {number} x - The x coordinate of the new center point
+                 * @param {number} y - the y coordinate of the new center point
+                 */
+                setCenter(x, y) {
+                    let dx =  x - this.center.x;
+                    let dy = y - this.center.y;
+
+                    this.center = { x : x , y : y };
+                    
+                    this.eyes.left.move( dx, dy );
+                    this.eyes.right.move( dx, dy );
+                }
+            }
+
+            /** A segment of the snake's body */
+            class SnakeSegment {
+                /**
+                 * Constructor for SnakeSegment
+                 * @param {Direction} direction - A direction from the DIRECTION enum
+                 * @param {SnakeSegment} nextSegment - The next segment. Provide null if no next segment 
+                 * @param {any} startX - The starting x coordinate
+                 * @param {any} startY - the starting y coordinate
+                 */
+                constructor(direction, nextSegment, startX, startY){
+                    this.start = { x : startX, y : startY };
+                    this.direction = direction;
+                    this.nextSegment = nextSegment;
+                    this.size = SNAKE_SIZE;
+                    this.rect = null;
+                }  
+                /**
+                 * Draw the snake segment
+                 */
+                draw() {
+                    SNAKE_CTX.beginPath();
+
+                    SNAKE_CTX.rect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+                    
+                    SNAKE_CTX.fillStyle = "green";
+                    SNAKE_CTX.fill();
+
+                    SNAKE_CTX.closePath();
+
+                    if (this.nextSegment != null) {
+                        this.nextSegment.draw();                   
+                    }
+                }
+                /**
+                 * Returns occupied grid squares
+                 * @returns {array} Returns an array of occupied grid square in the format "{row},{col}"
+                 */
+                getOccupied() {
+                    let occupied = [];
+
+                    if(this.rect != null) {
+                        // calculate the square that contains the top left and bottom right points.
+                        let topLeftSquare = grid.getSquare(this.rect.x, this.rect.y);
+                        let bottomRightSquare = grid.getSquare(this.rect.x + this.rect.width, this.rect.y + this.rect.height);
+                        
+                        for(let i = topLeftSquare.row; i <= bottomRightSquare.row; i++) {
+                            for(let j = topLeftSquare.col; j <= bottomRightSquare.col; j++) {
+                                occupied.push( i + "," + j );
+                            }
+                        }
+
+                        if(this.nextSegment != null) {     
+                            // merge this occupied with later segments
+                            occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
+                        }
+                    }
+                    return occupied;
+                }
+                /**
+                 * Returns the hitbox
+                 * @returns {Rectangle} Returns a Rectangle representing the hitbox of the segment
+                 */
+                get hitBox() {
+                    return this.rect;
+                }
+                /**
+                 * Updates the position and size of the segment
+                 * @param {number} length - The remaining length left of the snake
+                 */
+                update(length) {
+                    let segmentLength = length;
+                    if(this.nextSegment != null) {
+                        switch (this.direction) {
+                            case DIRECTION.UP:
+                                segmentLength = Math.min(length, this.nextSegment.start.y - this.start.y);
+                                break;
+                            case DIRECTION.DOWN:
+                                segmentLength = Math.min(length, this.start.y - this.nextSegment.start.y);
+                                break;
+                            case DIRECTION.LEFT:
+                                segmentLength = Math.min(length, this.nextSegment.start.x - this.start.x);
+                                break;
+                            case DIRECTION.RIGHT:   
+                                segmentLength = Math.min(length, this.start.x - this.nextSegment.start.x);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    let quarterSize = this.size/4               
+                    switch (this.direction) {
+                        case DIRECTION.UP:
+                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y, this.size/2, segmentLength);
+                            break;
+                        case DIRECTION.DOWN:
+                            this.rect = new Rectangle(this.start.x - quarterSize, this.start.y - segmentLength, this.size/2, segmentLength);
+                            break;
+                        case DIRECTION.LEFT:
+                            this.rect = new Rectangle(this.start.x , this.start.y - quarterSize, segmentLength, this.size/2);
+                            break;
+                        case DIRECTION.RIGHT:   
+                            this.rect = new Rectangle(this.start.x - segmentLength, this.start.y - quarterSize, segmentLength, this.size/2);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (this.nextSegment != null) {
+                        let remainingLength = length - segmentLength;
+                        if(remainingLength <= 0) {
+                            // The segment has moved past the next segment so delete it.
+                            this.nextSegment = null;
+                        }
+                        else {
+                            this.nextSegment.update(remainingLength);
+                        }                       
+                    }
+
+                }
+            }
+
+            /** Represents the entire snake */
+            class Snake {
+                constructor(){
+                    this.enabled = false;
+                    this.dx = 0;
+                    this.dy = 0;
+                    this.size = SNAKE_SIZE;
+                    this.direction = SNAKE_START_DIRECTION;
+                    this.nextDirection = null;
+                    this.speed = SNAKE_SPEED;
+                    this.length = SNAKE_START_LENGTH;
+                    this.lastTurnSquare = null;
+                    this.nextSegment = new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y);
+                    this.head = new SnakeHead();
+                }
+                /**
+                 * Checks if the snake has collided with anything
+                 * @param {function} collisionCallBack - A function to call in the event of a collision
+                 */
+                checkCollision(collisionCallBack) {
+                    let canvas = document.getElementById("SnakeCanvas");
+                    let halfSize = this.size/2;
+                    let topLeft = { 
+                        x : this.head.center.x - halfSize,
+                        y : this.head.center.y - halfSize
+                    };
+                    let bottomRight = {
+                        x : this.head.center.x + halfSize,
+                        y : this.head.center.y + halfSize
+                    }
+                    
+                    // Get snake head hitbox
+                    var snakeHeadHitBox = this.head.hitBox;
+
+                    let foodRect = food.hitBox;
+
+                    if(snakeHeadHitBox.checkCollision(foodRect)) {
+                        // eat and grow
+                        this.length += SNAKE_GROWTH_RATE;
+                        scoreBoard.addToScore(POINTS_PER_FOOD);
+
+                        // generate list of spaces the snake occupies
+                        let occupied = this.getOccupied();
+                        
+                        // spawn more food
+                        grid.spawnFood(occupied);
+                    }
+
+                    // check if snake collides with itself
+                    if(this.nextSegment != null && 
+                        this.nextSegment.nextSegment != null && 
+                        this.nextSegment.nextSegment.nextSegment != null) {
+                        // skip first three segments as the snake head cannot collide with it
+                        let segment = this.nextSegment.nextSegment.nextSegment;
+                        while (segment.nextSegment != null) {
+                            segment = segment.nextSegment;
+                            let segmentRect = segment.hitBox;
+                            if(segmentRect != null && snakeHeadHitBox.checkCollision(segmentRect)) {
+                                // collision!
+                                this.dx = 0;
+                                this.dy = 0;
+                                snake.enabled = false;
+                                if(collisionCallBack != null) {
+                                    collisionCallBack();
+                                }
+                            }
+
+                        }
+                    }
+
+                    // check if snake head is still on canvas
+                    if(topLeft.x < 0) {
+                        // Left
+                        this.dx = 0;
+                        this.dy = 0;
+                        this.head.center.x = 0 + halfSize;
+                        this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
+                    } 
+                    else if (topLeft.y < 0) {
+                        // Top
+                        this.dx = 0;
+                        this.dy = 0;
+                        this.head.center.y = 0 + halfSize;
+                        this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
+                    } 
+                    else if (bottomRight.x > canvas.width) {
+                        // Right
+                        this.dx = 0;
+                        this.dy = 0;
+                        this.head.center.x = canvas.width - halfSize;
+                        this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
+                    }
+                    else if (bottomRight.y > canvas.width) {
+                        // Bottom
+                        this.dx = 0;
+                        this.dy = 0;
+                        this.head.center.y = canvas.width - halfSize;
+                        this.enabled = false;
+                        if(collisionCallBack != null) {
+                            collisionCallBack();
+                        }
+                    }
+                };
+                /**
+                 * Draw the snake
+                 */
+                draw() {
+                    
+                    if(this.nextSegment != null) {
+                        this.nextSegment.update(this.length);
+                        this.nextSegment.draw();
+                    }
+                    this.head.draw();
+     
+                    return;
+                };
+                /**
+                 * Returns occupied grid squares
+                 * @returns {array} Returns an array of occupied grid square in the format "{row},{col}"
+                 */
+                getOccupied() {
+                    let snakeHeadSquare = grid.getSquare(this.head.center.x, this.head.center.y);
+                    let occupied = [];
+                    occupied.push( snakeHeadSquare.row + "," + snakeHeadSquare.col );
+
+                    if(this.nextSegment != null) {
+                        // merge occupied with segments
+                        occupied = occupied.concat(this.nextSegment.getOccupied().filter(x => !occupied.includes(x)));
+                    }
+                    return occupied;
+                };
+                /**
+                 * Move the snake based on its speed, direction, and if a next direction has been set
+                 */
+                move() {
+                    if (this.enabled == false) {
+                        return;
+                    }
+
+                    let nextX = this.head.center.x + this.dx;
+                    let nextY = this.head.center.y + this.dy;
+
+
+                    if (this.nextDirection == null || this.direction == this.nextDirection) {
+                        // No change so continue in same direction
+                        this.setCenter(nextX, nextY);  
+                    }
+                    else {
+                        let currentSquare = grid.getSquare(this.head.center.x, this.head.center.y);
+                        
+                        if(this.lastTurnSquare != null &&
+                            this.lastTurnSquare["center"]["x"] == currentSquare["center"]["x"] &&
+                            this.lastTurnSquare["center"]["y"] == currentSquare["center"]["y"]) {
+                            // The snake already turned in this square
+                            this.setCenter(nextX, nextY);
+                            return;
+                        }
+
+                        // Check if the snake head passes through the center of the current square
+                        if (this.dx != 0 ) {
+                            if ((this.dx < 0 && nextX <= currentSquare["center"]["x"] < this.head.center.x) ||
+                                (this.dx > 0 && this.head.center.x < currentSquare["center"]["x"] <= nextX)) {
+                                
+                                //let remainingMovement = Math.abs(this.dx) - Math.abs(this.center.x - currentSquare["center"]["x"]);
+
+                                // Set snake head to center of current square
+                                this.setCenter(currentSquare["center"]["x"], currentSquare["center"]["y"]);
+
+                                // Turn snake head
+                                this.setDirection(this.nextDirection);
+                                this.nextDirection = null;
+
+                                this.lastTurnSquare = currentSquare;
+                                // TODO: Complete move
+                            }
+                            else {
+                                this.setCenter(nextX, nextY);
+                            }
+                        }
+                        else if ( this.dy != 0 ) {
+                            if ((this.dy < 0 && nextY <= currentSquare["center"]["y"] < this.head.center.y) ||
+                                (this.dy > 0 && this.head.center.y < currentSquare["center"]["y"] <= nextY)) {
+                                
+                                //let remainingMovement = Math.abs(this.dy) - Math.abs(this.center.y - currentSquare["center"]["y"]);
+
+                                // Set snake head to center of current square
+                                this.setCenter(currentSquare["center"]["x"], currentSquare["center"]["y"]);
+
+                                // Turn snake head
+                                this.setDirection(this.nextDirection);
+                                this.nextDirection = null;
+
+                                this.lastTurnSquare = currentSquare;
+                                // TODO: Complete move
+                            }
+                            else {
+                                this.setCenter(nextX, nextY);
+                            }
+                        }
+                    }
+                };
+                /**
+                 * Set the direction of the snake
+                 * @param {direction} direction - A direction from the DIRECTION enum
+                 */
+                setDirection(direction) {
+                    let oldDirection = this.direction; 
+                    
+
+                    switch (direction) {
+                        case DIRECTION.UP:
+                            if (this.direction == DIRECTION.DOWN)
+                                break;
+                            this.dy = -this.speed;
+                            this.dx = 0;
+                            this.direction = direction;
+                            this.head.setDirection(direction);
+                            break;
+                        case DIRECTION.DOWN:
+                            if (this.direction == DIRECTION.UP)
+                                break;
+                            this.dy = this.speed;
+                            this.dx = 0;
+                            this.direction = direction;
+                            this.head.setDirection(direction);
+                            break;
+                        case DIRECTION.LEFT:
+                            if (this.direction == DIRECTION.RIGHT)
+                                break;
+                            this.dy = 0;
+                            this.dx = -this.speed;
+                            this.direction = direction;
+                            this.head.setDirection(direction);
+                            break;
+                        case DIRECTION.RIGHT:
+                            if (this.direction == DIRECTION.LEFT)
+                                break;
+                            this.dy = 0;
+                            this.dx = this.speed;
+                            this.direction = direction;
+                            this.head.setDirection(direction);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if(this.direction != this.nextSegment.direction) {
+                        // don't add a segment if going in the same direction
+                        let newSegment = new SnakeSegment(this.direction, this.nextSegment, this.head.center.x, this.head.center.y); 
+                        this.nextSegment = newSegment;
+                    }
+                    
+                };
+                /**
+                 * Set the next direction that the snake will take
+                 * @param {direction} direction - a direction from the DIRECTION enum
+                 */
+                setNextDirection(direction) {
+                    if(this.direction == direction)
+                        return;
+
+                    switch (direction) {
+                        case DIRECTION.UP:
+                            if (this.direction == DIRECTION.DOWN) {
+                                this.nextDirection = null;
+                                break;
+                            }
+                            this.nextDirection = direction;
+                            break;
+                        case DIRECTION.DOWN:
+                            if (this.direction == DIRECTION.UP) {
+                                this.nextDirection = null;
+                                break;
+                            }
+                            this.nextDirection = direction;
+                            break;
+                        case DIRECTION.LEFT:
+                            if (this.direction == DIRECTION.RIGHT) {
+                                this.nextDirection - null;
+                                break;
+                            }
+                            this.nextDirection = direction;
+                            break;
+                        case DIRECTION.RIGHT:
+                            if (this.direction == DIRECTION.LEFT) {
+                                this.nextDirection = null;
+                                break;
+                            }      
+                            this.nextDirection = direction;
+                            break;
+                        default:
+                            break;
+                    }
+                };
+                /**
+                 * Set the centerpoint of start of the snake
+                 * @param {number} x - The x coordinate
+                 * @param {number} y - the y coordinate
+                 */
+                setCenter(x, y) {
+                    this.head.setCenter(x, y);
+
+                    if(this.nextSegment != null) {
+                        this.nextSegment.start.x = this.head.center.x;
+                        this.nextSegment.start.y = this.head.center.y;
+                    }
+                };
+            }
+            var snake = new Snake();
+
+            /** Represents the game of Snake */
+            class SnakeGame {
+                constructor() {
+                    this.running = false;
+                    this.menu = document.getElementById("menuModal");
+
+                    // listen for key presses
+                    document.addEventListener('keydown', (e) => {
+                        var code = e.which || e.keyCode;
+                        if(this.running == false) {
+                            return;
+                        }
+
+                        if(snake.enabled == false) {
+                            snake.enabled = true;
+                            snake.setDirection(snake.direction);
+                        }
+                            
+                        if (code == '38' || code == '87') {
+                            // Up or W
+                            snake.setNextDirection(DIRECTION.UP);
+                        }
+                        else if (code == '40' || code == '83') {
+                            // Down or S
+                            snake.setNextDirection(DIRECTION.DOWN);
+                        }
+                        else if (code == '37' || code == '65') {
+                            // Left or A
+                            snake.setNextDirection(DIRECTION.LEFT);
+                        }
+                        else if (code == '39' || code == '68') {
+                            // Right or D
+                            snake.setNextDirection(DIRECTION.RIGHT);
+                        }
+                        else if (code == '27') {
+                            // Esc
+                            this.showMenu();       
+                        }              
+                    });
+                }
+                /**
+                 * Actions to take on each tick of the clock
+                 */
+                onTick() {
+                    snake.move();
+
+                    grid.draw();
+                    food.draw();
+                    snake.draw();
+
+                    scoreBoard.draw();
+
+                    snake.checkCollision(snakeGame.showMenu); 
+                }
+                /**
+                 * Pause the game
+                 */
+                pause() {
+                    this.running = false;
+
+                    snake.enabled = false;
+                }
+                /**
+                 * Reset the game
+                 */
+                reset() {
+                    this.pause();
+
+                    // set all values to default
+                    snake = new Snake();
+                    food = new Food(FOOD_START_X, FOOD_START_Y);
+
+                    // Close menu if it is open
+                    this.menu.style.display = "none";
+
+                    scoreBoard.reset();
+
+                    this.start();
+                };
+                /**
+                 * Resume the game
+                 */
+                resume() {
+                    this.running = true;
+                    snake.enabled = true;
+                };
+                /**
+                 * Show the game menu
+                 */
+                showMenu() {
+                    snakeGame.pause();
+                    snakeGame.menu.style.display = "block";
+                }
+                /**
+                 * Start the game
+                 */
+                start() {
+                    this.running = true;
+                }
+            }
+
+            var snakeGame = new SnakeGame();
+            setInterval(snakeGame.onTick, 20);
+            snakeGame.start();
+        </script>
+    </body>
+</html>
