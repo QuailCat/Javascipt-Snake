@@ -95,7 +95,7 @@
 
             const SNAKE_SCOREBOARD = document.getElementById("SnakeScoreboard");
             const SCOREBOARD_CTX = SnakeScoreboard.getContext("2d");
-
+   
             class Food {
                 constructor(centerX, centerY){
                     this.center = { x : centerX, y : centerY };
@@ -164,6 +164,109 @@
                 }
             }
             const scoreBoard = new ScoreBoard();
+
+            class Grid {
+                constructor() {
+                    this.squareSize = GRID_SQUARE_SIZE;
+                    this.rows = GRID_ROWS;
+                    this.columns = GRID_COLUMNS;
+                }        
+                getSquare(x, y) {
+                    let col = Math.floor(x/this.squareSize);
+                    let row = Math.floor(y/this.squareSize);
+                    return { 
+                        "row" : row, 
+                        "col" : col, 
+                        "center" : { 
+                            "x" : col * this.squareSize + this.squareSize/2, 
+                            "y" : row * this.squareSize + this.squareSize/2
+                        } 
+                    };
+                }
+                draw() {
+                    SNAKE_CTX.clearRect(0, 0, SNAKE_CANVAS.width, SNAKE_CANVAS.height);
+
+                    SNAKE_CTX.beginPath();
+
+                    // Draw background color
+                    SNAKE_CTX.fillStyle = "#996633";
+                    SNAKE_CTX.rect(0, 0, this.columns * this.squareSize, this.rows * this.squareSize);
+                    SNAKE_CTX.fill();
+
+                    SNAKE_CTX.closePath();
+
+                    // Draw Grid
+                    
+                    SNAKE_CTX.fillStyle = "#999966";
+                    for (let col = 0; col < this.columns; col++) {
+                        for (let row = 0; row < this.rows; row++) {
+                            if((col + row) % 2 == 0) {
+                                SNAKE_CTX.beginPath();
+                                SNAKE_CTX.rect(col * this.squareSize, 
+                                    row * this.squareSize, 
+                                    this.squareSize, 
+                                    this.squareSize);
+                                    SNAKE_CTX.fill();
+                                    SNAKE_CTX.closePath();
+                            } 
+                        }
+                    }
+                  
+                    SNAKE_CTX.closePath();
+                    return;
+                }
+                spawnFood(occupied) {
+                    // Get the array of unoccupied squares
+                    let unoccupiedSquares = [];
+                    for(let i = 0; i < this.rows; i++) {
+                        for(let j = 0; j < this.columns; j++) {
+                            let key = i + "," + j;
+                            if(!occupied.includes(key)){
+                                unoccupiedSquares.push( {"row" : i, "col": j} );
+                            }     
+                        }
+                    }
+
+                    // Choose a random unoccupied square
+                    let randomSquare = unoccupiedSquares[Math.floor(Math.random() * unoccupiedSquares.length)];
+
+                    // Get center point
+                    let x = randomSquare.col * this.squareSize + this.squareSize/2;
+                    let y = randomSquare.row * this.squareSize + this.squareSize/2;
+                    
+                    food = new Food(x, y);
+                }
+            }
+            const grid = new Grid();
+
+            
+            class Rectangle {
+                constructor(x, y, width, height) {
+                    this.x = x;
+                    this.y = y;
+                    this.width = width;
+                    this.height = height;
+                }
+                checkCollision(rectangle) {
+                    // check if the argument is a Rectangle
+                    if( !(rectangle instanceof Rectangle)) {
+                        throw "Invalid Argument";
+                    }
+
+                    // check for collision using axis-aligned bounding box detection
+                    if(this.x < (rectangle.x + rectangle.width) &&
+                        (this.x + this.width) > rectangle.x &&
+                        this.y < (rectangle.y + rectangle.height) &&
+                        (this.y + this.height) > rectangle.y) {
+                        // collision detected
+                        return true;
+                    }
+                    else {
+                        // no collision
+                        return false;
+                    }
+                }
+            }
 
             class SnakeEye {
                 constructor(radius) {
@@ -288,12 +391,8 @@
 
                     SNAKE_CTX.rect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                     
-                    let saveFillStyle = SNAKE_CTX.fillStyle;
                     SNAKE_CTX.fillStyle = "green";
-                    SNAKE_CTX.strokeStyle = "black";
                     SNAKE_CTX.fill();
-
-                    SNAKE_CTX.fillStyle = saveFillStyle;
 
                     SNAKE_CTX.closePath();
 
@@ -375,111 +474,6 @@
                         }                       
                     }
 
-                }
-            }
-
-            class Grid {
-                constructor() {
-                    this.squareSize = GRID_SQUARE_SIZE;
-                    this.rows = GRID_ROWS;
-                    this.columns = GRID_COLUMNS;
-                }        
-                getSquare(x, y) {
-                    let col = Math.floor(x/this.squareSize);
-                    let row = Math.floor(y/this.squareSize);
-                    return { 
-                        "row" : row, 
-                        "col" : col, 
-                        "center" : { 
-                            "x" : col * this.squareSize + this.squareSize/2, 
-                            "y" : row * this.squareSize + this.squareSize/2
-                        } 
-                    };
-                }
-                draw() {
-                    let saveFillStyle = SNAKE_CTX.fillStyle;
-
-                    SNAKE_CTX.beginPath();
-
-                    // Draw background color
-                    SNAKE_CTX.fillStyle = "#996633";
-                    SNAKE_CTX.rect(0, 0, this.columns * this.squareSize, this.rows * this.squareSize);
-                    SNAKE_CTX.fill();
-
-                    SNAKE_CTX.closePath();
-
-                    // Draw Grid
-                    
-                    SNAKE_CTX.fillStyle = "#999966";
-                    for (let col = 0; col < this.columns; col++) {
-                        for (let row = 0; row < this.rows; row++) {
-                            if((col + row) % 2 == 0) {
-                                SNAKE_CTX.beginPath();
-                                SNAKE_CTX.rect(col * this.squareSize, 
-                                    row * this.squareSize, 
-                                    this.squareSize, 
-                                    this.squareSize);
-                                    SNAKE_CTX.fill();
-                                    SNAKE_CTX.closePath();
-                            } 
-                        }
-                    }
-
-                    
-                    SNAKE_CTX.closePath();
-                    SNAKE_CTX.fillStyle = saveFillStyle;
-                    return;
-                }
-                spawnFood(occupied) {
-                    // Get the array of unoccupied squares
-                    let unoccupiedSquares = [];
-                    for(let i = 0; i < this.rows; i++) {
-                        for(let j = 0; j < this.columns; j++) {
-                            let key = i + "," + j;
-                            if(!occupied.includes(key)){
-                                unoccupiedSquares.push( {"row" : i, "col": j} );
-                            }     
-                        }
-                    }
-
-                    // Choose a random unoccupied square
-                    let randomSquare = unoccupiedSquares[Math.floor(Math.random() * unoccupiedSquares.length)];
-
-                    // Get center point
-                    let x = randomSquare.col * this.squareSize + this.squareSize/2;
-                    let y = randomSquare.row * this.squareSize + this.squareSize/2;
-                    
-                    food = new Food(x, y);
-                }
-            }
-            const grid = new Grid();
-
-            
-            class Rectangle {
-                constructor(x, y, width, height) {
-                    this.x = x;
-                    this.y = y;
-                    this.width = width;
-                    this.height = height;
-                }
-                checkCollision(rectangle) {
-                    // check if the argument is a Rectangle
-                    if( !(rectangle instanceof Rectangle)) {
-                        throw "Invalid Argument";
-                    }
-
-                    // check for collision using axis-aligned bounding box detection
-                    if(this.x < (rectangle.x + rectangle.width) &&
-                        (this.x + this.width) > rectangle.x &&
-                        this.y < (rectangle.y + rectangle.height) &&
-                        (this.y + this.height) > rectangle.y) {
-                        // collision detected
-                        return true;
-                    }
-                    else {
-                        // no collision
-                        return false;
-                    }
                 }
             }
 
@@ -772,19 +766,17 @@
                     }
                 };
             }
-
             var snake = new Snake();
 
             class SnakeGame {
                 constructor() {
                     this.running = false;
-                    this.food = new Food(FOOD_START_X, FOOD_START_Y);
-                    this.snake = null;
+                    this.menu = document.getElementById("menuModal");
 
                     // listen for key presses
-                    document.addEventListener('keydown', function(e) {
+                    document.addEventListener('keydown', (e) => {
                         var code = e.which || e.keyCode;
-                        if(snakeGame.running == false) {
+                        if(this.running == false) {
                             return;
                         }
 
@@ -811,9 +803,25 @@
                         }
                         else if (code == '27') {
                             // Esc
-                            snakeGame.showMenu();       
+                            this.showMenu();       
                         }              
                     });
+                }
+                draw() {
+
+                }
+                onTick() {
+                    snake.move();
+
+                    grid.draw();
+                    food.draw();
+                    snake.draw();
+                    
+                    this.draw();
+
+                    scoreBoard.draw();
+
+                    snake.checkCollision(snakeGame.showMenu); 
                 }
                 pause() {
                     this.running = false;
@@ -828,21 +836,19 @@
                     food = new Food(FOOD_START_X, FOOD_START_Y);
 
                     // Close menu if it is open
-                    let menu = document.getElementById("menuModal");
-                    menu.style.display = "none";
+                    this.menu.style.display = "none";
 
                     scoreBoard.reset();
 
                     this.start();
                 };
                 resume() {
-
                     this.running = true;
                     snake.enabled = true;
                 };
                 showMenu() {
-                    snakeGame.pause();
-                    modal.style.display = "block";
+                    this.pause();
+                    this.menu.style.display = "block";
                 }
                 start() {
                     this.running = true;
@@ -850,25 +856,7 @@
             }
 
             var snakeGame = new SnakeGame();
-            var modal = document.getElementById("menuModal");
-
-            var count = 0;
-            function draw() {
-                SNAKE_CTX.clearRect(0, 0, SNAKE_CANVAS.width, SNAKE_CANVAS.height);
-            
-                grid.draw();
-
-                snake.move();
-
-                food.draw();
-                snake.draw();
-                
-                scoreBoard.draw();
-
-                snake.checkCollision(snakeGame.showMenu); 
-            }
-
-            setInterval(draw, 20);
+            setInterval(snakeGame.onTick, 20);
             snakeGame.start();
         </script>
     </body>
