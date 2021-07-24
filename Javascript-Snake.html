@@ -96,6 +96,7 @@
             const SNAKE_SCOREBOARD = document.getElementById("SnakeScoreboard");
             const SCOREBOARD_CTX = SnakeScoreboard.getContext("2d");
    
+            
             class Food {
                 constructor(centerX, centerY){
                     this.center = { x : centerX, y : centerY };
@@ -104,6 +105,9 @@
                     // set random fruit image
                     this.img = Fruit_Images.length > 0 ? Fruit_Images[Math.floor(Math.random() * Fruit_Images.length)] : null;
                 }
+                /**
+                 * Draw the food on the snake canvas
+                 */
                 draw() {
                     SNAKE_CTX.beginPath();
 
@@ -121,6 +125,10 @@
 
                     SNAKE_CTX.closePath();
                 }
+                /**
+                 * Get the hitbox for the food
+                 * @returns {Rectangle} Rectangle that represents the hitbox
+                 */
                 get hitBox() {
                     return new Rectangle(
                         this.center.x - this.size/2, 
@@ -137,10 +145,17 @@
                     this.score = 0;
                     this.highScore = 0;
                 }
+                /**
+                 * Add points to the current score and update highscore if prevous highscore has been exceeded
+                 * @param {number} points - The points to add to score
+                 */
                 addToScore(points) {
                     this.score += points;
                     this.highScore = Math.max(this.highScore, this.score);
                 }
+                /**
+                 * Draw the scoreboard
+                 */
                 draw() {
                     SCOREBOARD_CTX.beginPath();
 
@@ -159,30 +174,58 @@
                     // high score
                     SCOREBOARD_CTX.fillText('High Score: ' + this.highScore, 300, 50);
                 }
+                /**
+                 * Reset the scoreboard by setting score to 0
+                 * @returns {any}
+                 */
                 reset() {
                     this.score = 0;
                 }
             }
             const scoreBoard = new ScoreBoard();
 
+            class GridSquare {
+                /**
+                 * Constructor for GridSquare
+                 * @param {any} col - The column of the square
+                 * @param {any} row - The row of the square
+                 * @param {any} x - The x coordinate of the square's centerpoint
+                 * @param {any} y - The y coordinate of the square's centerpoint
+                 */
+                constructor(col, row, x, y) {
+                    this.col = col;
+                    this.row = row;
+                    this.center = { x : x, y : y };
+                }
+            }
+
             class Grid {
                 constructor() {
                     this.squareSize = GRID_SQUARE_SIZE;
                     this.rows = GRID_ROWS;
                     this.columns = GRID_COLUMNS;
-                }        
+                }   
+                   
+                /**
+                 * Returns the row and column of the square on the grid that the provided coordinates are in
+                 * @param {number} x - The x coordinate 
+                 * @param {rumber} y - the y coordinate
+                 * @returns {GridSquare} GridSquare containing the row and column of the square as well as its center point.
+                 */
                 getSquare(x, y) {
                     let col = Math.floor(x/this.squareSize);
                     let row = Math.floor(y/this.squareSize);
-                    return { 
-                        "row" : row, 
-                        "col" : col, 
-                        "center" : { 
-                            "x" : col * this.squareSize + this.squareSize/2, 
-                            "y" : row * this.squareSize + this.squareSize/2
-                        } 
-                    };
+                    return new GridSquare(
+                        row, 
+                        col, 
+                        col * this.squareSize + this.squareSize/2, 
+                        row * this.squareSize + this.squareSize/2
+                    ); 
+            
                 }
+                /**
+                 * Draw the grid
+                 */
                 draw() {
                     SNAKE_CTX.clearRect(0, 0, SNAKE_CANVAS.width, SNAKE_CANVAS.height);
 
@@ -215,6 +258,10 @@
                     SNAKE_CTX.closePath();
                     return;
                 }
+                /**
+                 * Spawn food in an unoccupied space
+                 * @param {array} occupied - Array of occupied squares in the format "{row},{col}"
+                 */
                 spawnFood(occupied) {
                     // Get the array of unoccupied squares
                     let unoccupiedSquares = [];
@@ -241,12 +288,24 @@
 
             
             class Rectangle {
+                /**
+                 * Rectangle Constructor
+                 * @param {number} x - The x coordinate of the upper left corner
+                 * @param {number} y - The y coordinate of the upper left corner
+                 * @param {number} width - The width of the Rectangle
+                 * @param {number} height - the height of the Rectangle
+                 */
                 constructor(x, y, width, height) {
                     this.x = x;
                     this.y = y;
                     this.width = width;
                     this.height = height;
                 }
+                /**
+                 * Check to see if it has collided with rectangle
+                 * @param {any} rectangle - The rectangle to check for collisions
+                 * @returns {boolean} Returns true if collision detected, false otherwise
+                 */
                 checkCollision(rectangle) {
                     // check if the argument is a Rectangle
                     if( !(rectangle instanceof Rectangle)) {
@@ -269,6 +328,10 @@
             }
 
             class SnakeEye {
+                /**
+                 * SnakeEye constructor
+                 * @param {number} radius - The radius of the snake eye
+                 */
                 constructor(radius) {
                     this.center;
                     this.target;
@@ -276,6 +339,9 @@
                     this.pupilRadius = this.radius/2;
                     this.pupilDistance = this.radius - this.pupilRadius;
                 }
+                /**
+                 * Draw the snake eye
+                 */
                 draw() {
                     // Draw Eyeball
                     SNAKE_CTX.beginPath();
@@ -289,8 +355,10 @@
                     SNAKE_CTX.beginPath();
                     this.setTarget(food.center.x, food.center.y);
 
+                    // Determine where the eye should be looking
                     let vectorLength = Math.sqrt(Math.pow(this.target.x - this.center.x, 2) + Math.pow(this.target.y - this.center.y, 2));
                     let v = { x : this.target.x - this.center.x, y : this.target.y - this.center.y }
+                    // Normalize vector
                     let u = { x : v.x/vectorLength, y : v.y/vectorLength };
 
                     SNAKE_CTX.arc(
@@ -305,12 +373,27 @@
 
                     SNAKE_CTX.closePath();
                 }
+                /**
+                 * Move the snake eye
+                 * @param {number} dx - Distance to move on the x plane
+                 * @param {number} dy - Distance to move on the y plane
+                 */
                 move(dx, dy) {
                     this.setCenter(this.center.x + dx, this.center.y + dy);
                 }
+                /**
+                 * Set the center point of the snake eye
+                 * @param {number} x - The new x coordinate of the center point
+                 * @param {number} y - The new y coordinate of the center point
+                 */
                 setCenter(x, y) {
                     this.center = { x : x , y : y };
                 }
+                /**
+                 * Set the location that the eye is looking at
+                 * @param {number} x - The x coordinate
+                 * @param {number} y - the y coordinate
+                 */
                 setTarget(x, y) {
                     // The location the eye is looking at
                     this.target = { x : x, y : y };
@@ -329,16 +412,29 @@
                     }; 
                     this.setDirection(SNAKE_START_DIRECTION);
                 }
+                /**
+                 * Draw the snake head
+                 */
                 draw() {
+                    // Draw the head
                     let img = SNAKE_IMAGES[this.direction];
                     SNAKE_CTX.drawImage(img, this.center.x - img.width/2, this.center.y - img.height/2);
 
+                    // Draw the eyes
                     this.eyes.left.draw();
                     this.eyes.right.draw();
                 }
+                /**
+                 * Returns the hitbox of the snake head
+                 * @returns {Rectangle} Returns a Rectangle that represents the hitbox
+                 */
                 get hitBox() {
                     return new Rectangle(this.center.x - this.size/4, this.center.y - this.size/4, this.size/4, this.size/4 );
                 }
+                /**
+                 * Set the direction of the snake head
+                 * @param {Direction} direction - A direction from the DIRECTION enum
+                 */
                 setDirection(direction) {
                     if(this.direction == direction) {
                         return;
@@ -367,6 +463,11 @@
 
                     this.direction = direction;
                 }
+                /**
+                 * Set the center point of the snake head
+                 * @param {number} x - The x coordinate of the new center point
+                 * @param {number} y - the y coordinate of the new center point
+                 */
                 setCenter(x, y) {
                     let dx =  x - this.center.x;
                     let dy = y - this.center.y;
@@ -379,6 +480,13 @@
             }
 
             class SnakeSegment {
+                /**
+                 * Constructor for SnakeSegment
+                 * @param {Direction} direction - A direction from the DIRECTION enum
+                 * @param {SnakeSegment} nextSegment - The next segment. Provide null if no next segment 
+                 * @param {any} startX - The starting x coordinate
+                 * @param {any} startY - the starting y coordinate
+                 */
                 constructor(direction, nextSegment, startX, startY){
                     this.start = { x : startX, y : startY };
                     this.direction = direction;
@@ -386,6 +494,9 @@
                     this.size = SNAKE_SIZE;
                     this.rect = null;
                 }  
+                /**
+                 * Draw the snake segment
+                 */
                 draw() {
                     SNAKE_CTX.beginPath();
 
@@ -400,6 +511,10 @@
                         this.nextSegment.draw();                   
                     }
                 }
+                /**
+                 * Returns occupied grid squares
+                 * @returns {array} Returns an array of occupied grid square in the format "{row},{col}"
+                 */
                 getOccupied() {
                     let occupied = [];
 
@@ -421,9 +536,17 @@
                     }
                     return occupied;
                 }
+                /**
+                 * Returns the hitbox
+                 * @returns {Rectangle} Returns a Rectangle representing the hitbox of the segment
+                 */
                 get hitBox() {
                     return this.rect;
                 }
+                /**
+                 * Updates the position and size of the segment
+                 * @param {number} length - The remaining length left of the snake
+                 */
                 update(length) {
                     let segmentLength = length;
                     if(this.nextSegment != null) {
@@ -491,6 +614,10 @@
                     this.nextSegment = new SnakeSegment(SNAKE_START_DIRECTION, null, SNAKE_START_X, SNAKE_START_Y);
                     this.head = new SnakeHead();
                 }
+                /**
+                 * Checks if the snake has collided with anything
+                 * @param {function} collisionCallBack - A function to call in the event of a collision
+                 */
                 checkCollision(collisionCallBack) {
                     let canvas = document.getElementById("SnakeCanvas");
                     let halfSize = this.size/2;
@@ -584,6 +711,9 @@
                         }
                     }
                 };
+                /**
+                 * Draw the snake
+                 */
                 draw() {
                     
                     if(this.nextSegment != null) {
@@ -594,6 +724,10 @@
      
                     return;
                 };
+                /**
+                 * Returns occupied grid squares
+                 * @returns {array} Returns an array of occupied grid square in the format "{row},{col}"
+                 */
                 getOccupied() {
                     let snakeHeadSquare = grid.getSquare(this.head.center.x, this.head.center.y);
                     let occupied = [];
@@ -605,6 +739,9 @@
                     }
                     return occupied;
                 };
+                /**
+                 * Move the snake based on its speed, direction, and if a next direction has been set
+                 */
                 move() {
                     if (this.enabled == false) {
                         return;
@@ -672,6 +809,10 @@
                         }
                     }
                 };
+                /**
+                 * Set the direction of the snake
+                 * @param {direction} direction - A direction from the DIRECTION enum
+                 */
                 setDirection(direction) {
                     let oldDirection = this.direction; 
                     
@@ -720,6 +861,10 @@
                     }
                     
                 };
+                /**
+                 * Set the next direction that the snake will take
+                 * @param {direction} direction - a direction from the DIRECTION enum
+                 */
                 setNextDirection(direction) {
                     if(this.direction == direction)
                         return;
@@ -757,6 +902,11 @@
                             break;
                     }
                 };
+                /**
+                 * Set the centerpoint of start of the snake
+                 * @param {number} x - The x coordinate
+                 * @param {number} y - the y coordinate
+                 */
                 setCenter(x, y) {
                     this.head.setCenter(x, y);
 
@@ -807,27 +957,31 @@
                         }              
                     });
                 }
-                draw() {
-
-                }
+                /**
+                 * Actions to take on each tick of the clock
+                 */
                 onTick() {
                     snake.move();
 
                     grid.draw();
                     food.draw();
                     snake.draw();
-                    
-                    this.draw();
 
                     scoreBoard.draw();
 
                     snake.checkCollision(snakeGame.showMenu); 
                 }
+                /**
+                 * Pause the game
+                 */
                 pause() {
                     this.running = false;
 
                     snake.enabled = false;
                 }
+                /**
+                 * Reset the game
+                 */
                 reset() {
                     this.pause();
 
@@ -842,14 +996,23 @@
 
                     this.start();
                 };
+                /**
+                 * Resume the game
+                 */
                 resume() {
                     this.running = true;
                     snake.enabled = true;
                 };
+                /**
+                 * Show the game menu
+                 */
                 showMenu() {
-                    this.pause();
-                    this.menu.style.display = "block";
+                    snakeGame.pause();
+                    snakeGame.menu.style.display = "block";
                 }
+                /**
+                 * Start the game
+                 */
                 start() {
                     this.running = true;
                 }
