@@ -1051,7 +1051,12 @@
             }
 
             var snakeGame = new SnakeGame();
-            setInterval(snakeGame.onTick, 20);
+            function animate() {
+                snakeGame.onTick();
+
+                requestAnimationFrame(animate);
+            }
+            animate();
             snakeGame.start();
         </script>
     </body>
